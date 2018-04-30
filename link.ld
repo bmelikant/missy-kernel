@@ -7,17 +7,18 @@ SECTIONS {
 	_KERNEL_START = .;
 
 	.text ALIGN(4K) : AT(ADDR(.text)-0xBFF00000) {
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o) *(.text)
+		*(.multiboot)
+		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o) *(.text)
 	}
 
 	.data ALIGN(4K) : AT(ADDR(.data)-0xBFF00000) {
-		*(.data)
-		*(.rodata*)
+		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o) *(.data)
+		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o) *(.rodata*)
 	}
 
 	.bss ALIGN(4K) : AT(ADDR(.bss)-0xBFF00000) {
-		*(COMMON*)
-		*(.bss*)
+		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o) *(COMMON*)
+		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o) *(.bss*)
 	}
 
 	_KERNEL_END = .;
@@ -28,9 +29,10 @@ SECTIONS {
 	
 	.startup BLOCK(4K) : ALIGN(4K) {
 		*(.bootstrap)
+		src/multiboot.o
 		src/balloc_stub.o
 		src/kernel_stub.o
-		src/multiboot.o
+		src/early_terminal.o
 	}
 
 	_LOADER_STUB_END = .;

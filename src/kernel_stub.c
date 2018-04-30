@@ -12,6 +12,7 @@
 
 #include <kmemory.h>
 #include <multiboot.h>
+#include <early_terminal.h>
 
 #define PAGE_SIZE 4096
 
@@ -27,6 +28,7 @@ unsigned long used_blocks;
 // function declarations
 int kernel_early_init();
 int balloc_setup(unsigned long memory_sz);
+
 unsigned long get_memory_size(multiboot_info *mboot);
 
 // kernel_early_init() - do the kernel early initialization (sets up basic paging)
@@ -34,8 +36,11 @@ unsigned long get_memory_size(multiboot_info *mboot);
 // returns: -1 on error, 0 on success
 int kernel_early_init(void *multiboot, unsigned int magic) {
 
+	kernel_early_info("Kernel is coming up");
+	kernel_early_info("Getting multiboot information");
+
 	if (multiboot_data_init(multiboot, magic) == -1) {
-		//kstub_panic();
+		kernel_early_panic("Error fetching multiboot data");
 	}
 	return 0;
 }
@@ -50,3 +55,4 @@ int balloc_setup(unsigned long memory_sz) {
 
 	return 0;
 }
+

@@ -7,6 +7,7 @@
  */
 
 #include <multiboot.h>
+#include <early_terminal.h>
 
 // internal data
 static unsigned int boot_magic = 0;
@@ -35,6 +36,7 @@ int multiboot_data_init (void *mb_ptr, unsigned int magic) {
 
 	// save the magic field
 	boot_magic = magic;
+	kernel_early_printf("[INFO] Boot magic is 0x%x\n", magic);
 
 	if (boot_magic == MULTIBOOT_MAGIC) {
 
