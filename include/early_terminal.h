@@ -9,10 +9,7 @@ int kernel_early_putc(int c);
 int kernel_early_puts(const char *str);
 int kernel_early_putstr(const char *str);
 int kernel_early_printf(const char *str, ...);
-
-void kernel_early_build_log_string(const char *level, const char *msg, uint8_t color);
-void kernel_early_panic(const char *msg);
-void kernel_early_info(const char *msg);
+void kernel_early_log(const char *level, uint8_t color);
 
 void kernel_early_scroll_display();
 void kernel_early_enable_cursor(uint8_t, uint8_t);

@@ -17,8 +17,10 @@
 #define PAGE_SIZE 4096
 
 // external symbols to assist in locating the memory map
-extern int _KHEAP_START;
+extern uint32_t _KHEAP_START;
 extern int _KERNEL_TOTAL_SIZE;
+
+extern void early_panic();
 
 // pointer to the memory allocation bitmap (translated to a virtual address later)
 physaddr_p memory_bmp;
@@ -27,7 +29,7 @@ unsigned long used_blocks;
 
 // function declarations
 int kernel_early_init();
-int balloc_setup(unsigned long memory_sz);
+int balloc_early_setup(unsigned long memory_sz);
 
 unsigned long get_memory_size(multiboot_info *mboot);
 
@@ -36,22 +38,36 @@ unsigned long get_memory_size(multiboot_info *mboot);
 // returns: -1 on error, 0 on success
 int kernel_early_init(void *multiboot, unsigned int magic) {
 
-	kernel_early_info("Kernel is coming up");
-	kernel_early_info("Getting multiboot information");
+	kernel_early_printf("%L Kernel is coming up\n");
+	kernel_early_printf("%L Getting multiboot information\n");
 
 	if (multiboot_data_init(multiboot, magic) == -1) {
-		kernel_early_panic("Error fetching multiboot data");
+		kernel_early_printf("%P Error fetching multiboot data\n");
+		early_panic();
 	}
+
+	kernel_early_printf("%L Memory size reported by multiboot: %d kilobytes\n", multiboot_get_memsz());
+	
+	if (balloc_early_setup(multiboot_get_memsz()) == -1) {
+		kernel_early_printf("%P Error initializing block allocator\n");
+		early_panic();
+	}
+
 	return 0;
 }
 
 // balloc_setup() - perform early initialization of the block allocator
 // inputs: memory_sz: size of system memory in bytes(?)
 // returns: -1 on error, 0 on success
-int balloc_setup(unsigned long memory_sz) {
+int balloc_early_setup(unsigned long memory_sz) {
 
 	// compute the size of the memory map
-	total_blocks = (memory_sz / PAGE_SIZE) / sizeof(uint32_t);
+	total_blocks = ((memory_sz * 1024) / PAGE_SIZE) / sizeof(uint32_t);
+	kernel_early_printf("%I Memory allocator total blocks: %d\n", total_blocks);
+	memory_bmp = (physaddr_p) &_KHEAP_START;
+
+	// zero out the bitmap
+	
 
 	return 0;
 }

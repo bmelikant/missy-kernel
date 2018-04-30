@@ -48,6 +48,8 @@ align 4
 [extern kernel_early_init]
 [extern kernel_early_putc]
 [extern kernel_early_puts]
+[global kstart]
+[global early_panic]
 
 gdt_start:
 
@@ -59,8 +61,6 @@ gdt_table:
 
 	dw gdt_table-gdt_start-1
 	dd gdt_start
-
-[global kstart]
 
 kstart:
 	
@@ -85,5 +85,9 @@ next:
 	push ebx
 	call kernel_early_init
 	hlt
+
+early_panic:
+
+	jmp $
 
 testStr db 'Blah blah blah',0

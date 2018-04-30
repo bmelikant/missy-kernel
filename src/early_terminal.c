@@ -8,6 +8,8 @@
 
 #define TEXT_INFO_COLOR 	0x2F
 #define TEXT_PANIC_COLOR 	0xCF
+#define TEXT_WARNING_COLOR  0xEF
+#define TEXT_LOG_COLOR 		VIDEO_COLOR_ATTRIBUTE
 
 // private (internal) variables
 static int _cur_x = 0;
@@ -147,11 +149,8 @@ int kernel_early_printf(const char *str, ...) {
 
 				for (size_t i = 0; i < strlen(num_str); i++)
 					kernel_early_putc(num_str[i]);
-			}
-
-			// a binary format number?
-
-			else if (*str == 'b') {
+			
+			} else if (*str == 'b') {
 
 				unsigned int argument = va_arg(args, unsigned int);
 				char num_str[36];
@@ -160,11 +159,8 @@ int kernel_early_printf(const char *str, ...) {
 
 				for (size_t i = 0; i < strlen (num_str); i++)
 					kernel_early_putc(num_str[i]);
-			}
-
-			// a hexadecimal number?
-
-			else if (*str == 'X' || *str == 'x') {
+			
+			} else if (*str == 'X' || *str == 'x') {
 
 				unsigned int argument = va_arg (args, unsigned int);
 				char num_str[20];
@@ -173,28 +169,38 @@ int kernel_early_printf(const char *str, ...) {
 
 				for (size_t i = 0; i < strlen (num_str); i++)
 					kernel_early_putc(num_str[i]);
-			}
-
-			// a string?
-
-			else if (*str == 's') {
+			
+			} else if (*str == 's') {
 
 				char *argument = va_arg (args, char*);
 
 				while (*argument)
 					kernel_early_putc(*argument++);
-			}
-
-			// a character?
-
-			else if (*str == 'c') {
+			
+			} else if (*str == 'c') {
 
 				unsigned char argument = (unsigned char) va_arg (args, unsigned int);
 				kernel_early_putc(argument);
-			}
 
-			else
+			} else if (*str == 'P') {
+
+				kernel_early_log("[PANIC]", TEXT_PANIC_COLOR);
+			
+			} else if (*str == 'I') {
+
+				kernel_early_log("[INFO]", TEXT_INFO_COLOR);
+
+			} else if (*str == 'W') {
+
+				kernel_early_log("[WARNING]", TEXT_WARNING_COLOR);
+
+			} else if (*str == 'L') {
+
+				kernel_early_log("[KERNEL]", TEXT_LOG_COLOR);
+			
+			} else {
 				kernel_early_putc(*str);
+			}
 
 			// increment the pointer
 			str++;
@@ -204,6 +210,7 @@ int kernel_early_printf(const char *str, ...) {
 			kernel_early_putc(*str++);		// just print out the character
 	}
 
+	kernel_early_update_cursor();
 	return 0;
 }
 
@@ -224,21 +231,11 @@ void kernel_early_scroll_display() {
 	_cur_y = VIDEO_MAX_ROWS-1;
 }
 
-void kernel_early_panic(const char *panic_msg) {
-	kernel_early_build_log_string("[PANIC]", panic_msg, TEXT_PANIC_COLOR);
-	for(;;);
-}
-
-void kernel_early_info(const char *info_msg) {
-	kernel_early_build_log_string("[INFO]", info_msg, TEXT_INFO_COLOR);
-}
-
-void kernel_early_build_log_string(const char *level, const char *msg, uint8_t color) {
+void kernel_early_log(const char *level, uint8_t color) {
 	uint8_t current_color = kernel_early_set_color_attr(color);
 	kernel_early_putstr(level);
 	kernel_early_set_color_attr(current_color);
 	kernel_early_putstr(": ");
-	kernel_early_puts(msg);
 }
 
 void kernel_early_enable_cursor(uint8_t cursor_start, uint8_t cursor_end) {
