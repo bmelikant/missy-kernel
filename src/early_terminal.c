@@ -1,4 +1,5 @@
 #include <early_terminal.h>
+#include <early_utils.h>
 
 #define VIDEO_MEMORY_BASE 		0xB8000
 #define VIDEO_MAX_COLS			80
@@ -15,57 +16,6 @@
 static int _cur_x = 0;
 static int _cur_y = 0;
 static uint8_t color_attribute = VIDEO_COLOR_ATTRIBUTE;
-
-const char 	lettermap [] = "0123456789abcdef";
-char		buffer[32];
-extern int 	errno;
-
-static inline uint8_t inportb_low(uint16_t port) {
-	uint8_t ret;
-	asm volatile ("inb %1,%0" : "=a"(ret) : "Nd"(port));
-	return ret;
-}
-
-static inline void outportb_low(uint16_t port, uint8_t data) {
-	asm volatile ("outb %0,%1" : : "a"(data), "Nd"(port));
-}
-
-static size_t strlen(const char *str) {
-	char *s = (char *) str;
-	while (*s++);
-	return (size_t) (s-str)-1;
-}
-
-static char * itoa_s(char *str, int num, int base) {
-	int pos  = 0;
-	int opos = 0;
-	int top  = 0;
-
-	// base must be < 16 and i cannot be zero
-	if (num == 0 || base > 16) {
-
-		str[0] = '0';
-		str[1] = '\0';
-
-		return str;
-	}
-
-	// now transform the number to a string
-	while (num > 0) {
-
-		buffer[pos] = lettermap[num % base];
-		pos++;
-		num /= base;
-	}
-
-	top = pos--;
-
-	for (opos = 0; opos < top; pos--,opos++)
-		str[opos] = buffer[pos];
-
-	str[opos] = 0;
-	return str;
-}
 
 int kernel_early_puts(const char *str) {
 	char *s = (char *) str;
@@ -145,9 +95,9 @@ int kernel_early_printf(const char *str, ...) {
 				unsigned int argument = va_arg(args, unsigned int);
 				char num_str[20];
 
-				itoa_s(num_str, argument, 10);
+				early_itoa_s(num_str, argument, 10);
 
-				for (size_t i = 0; i < strlen(num_str); i++)
+				for (size_t i = 0; i < early_strlen(num_str); i++)
 					kernel_early_putc(num_str[i]);
 			
 			} else if (*str == 'b') {
@@ -155,9 +105,9 @@ int kernel_early_printf(const char *str, ...) {
 				unsigned int argument = va_arg(args, unsigned int);
 				char num_str[36];
 
-				itoa_s(num_str, argument, 2);
+				early_itoa_s(num_str, argument, 2);
 
-				for (size_t i = 0; i < strlen (num_str); i++)
+				for (size_t i = 0; i < early_strlen (num_str); i++)
 					kernel_early_putc(num_str[i]);
 			
 			} else if (*str == 'X' || *str == 'x') {
@@ -165,9 +115,9 @@ int kernel_early_printf(const char *str, ...) {
 				unsigned int argument = va_arg (args, unsigned int);
 				char num_str[20];
 
-				itoa_s (num_str, argument, 16);
+				early_itoa_s (num_str, argument, 16);
 
-				for (size_t i = 0; i < strlen (num_str); i++)
+				for (size_t i = 0; i < early_strlen (num_str); i++)
 					kernel_early_putc(num_str[i]);
 			
 			} else if (*str == 's') {

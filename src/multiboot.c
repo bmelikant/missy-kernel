@@ -134,9 +134,10 @@ void *multiboot_find_rdsp () {
 
 	// ACPI data only exists for multiboot2
 	if (boot_magic == MULTIBOOT2_MAGIC) {
-
-
+		return NULL;
 	}
+
+	return NULL;
 }
 
 /* multiboot internal functions */

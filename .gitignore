@@ -1,1 +1,5 @@
 /.vscode
+*.o
+kernel_test
+*.iso
+./isodir/

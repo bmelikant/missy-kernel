@@ -37,7 +37,8 @@ src/kernel_stub.o \
 src/balloc_stub.o \
 src/multiboot.o \
 asm/kernel_stub.o \
-src/early_terminal.o
+src/early_terminal.o \
+src/early_utils.o
 
 CRTI_OBJ:=asm/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)

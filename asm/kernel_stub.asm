@@ -33,9 +33,9 @@ multiboot2_end:
 
 multiboot_hdr:
 
-;	dd MULTIBOOT_HEADER_MAGIC
-;	dd MULTIBOOT_HEADER_FLAGS
-;	dd MULTIBOOT_CHECKSUM
+	dd MULTIBOOT_HEADER_MAGIC
+	dd MULTIBOOT_HEADER_FLAGS
+	dd MULTIBOOT_CHECKSUM
 
 [section .bootstrap]
 align 4
