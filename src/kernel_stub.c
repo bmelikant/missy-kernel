@@ -54,9 +54,7 @@ int kernel_early_init(void *multiboot, unsigned int magic) {
 
 	kernel_early_printf("%L Kernel is coming up\n");
 	kernel_early_printf("%L Getting multiboot information\n");
-	kernel_early_printf("%I Multiboot magic is reported as %i\n", magic);
-
-	int multiboot_return = multiboot_data_init(multiboot,magic);
+	kernel_early_printf("%I Multiboot magic is reported as %x\n", magic);
 
 	if (multiboot_data_init(multiboot, magic) == -1) {
 		kernel_early_printf("%P Error fetching multiboot data\n");
@@ -85,7 +83,6 @@ int kernel_early_init(void *multiboot, unsigned int magic) {
 	}
 
 	kernel_early_printf("%I Block allocator has been initialized");
-
 	return 0;
 }
 

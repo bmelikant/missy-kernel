@@ -204,7 +204,7 @@ void *mboot2_find_tag(unsigned int tag_type) {
 }
 
 // get the next multiboot2 memory map entry
-multiboot2_entry_mmap *mboot2_next_mmap () {
+multiboot2_entry_mmap *mboot2_next_mmap() {
 
 	// get the memory map entry count
 	unsigned int mmap_entries = ((mb2_memory_map->tag.size-sizeof(multiboot2_tag_mmap)) / mb2_memory_map->entry_sz);
