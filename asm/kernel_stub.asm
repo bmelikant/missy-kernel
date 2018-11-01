@@ -46,10 +46,9 @@ align 4
 %define COLOR_ATTRIBUTE 0x70
 
 [extern kernel_early_init]
-[extern kernel_early_putc]
-[extern kernel_early_puts]
-[global kstart]
 [global early_panic]
+[global kstart]
+[global early_errno]
 
 gdt_start:
 
@@ -90,4 +89,4 @@ early_panic:
 
 	jmp $
 
-testStr db 'Blah blah blah',0
+early_errno dd 0x00

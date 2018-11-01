@@ -43,17 +43,14 @@ int kernel_early_putc(int c) {
 	if (c == '\n') {
 		_cur_x = 0;
 		_cur_y++;
-		
 	} else if (c == '\t') {
 		for (int i = 0; i < TAB_SIZE; i++) {
 			kernel_early_putc(0x20);
 		}
-
 	} else if (c == '\b') {
 		_cur_x--;
 		kernel_early_putc(0x20);
 		_cur_x--;
-	
 	} else {
 		// grab a pointer to the location in video memory
 		uint16_t *video_ptr = (uint16_t *) (VIDEO_MEMORY_BASE+(_cur_y*VIDEO_MAX_COLS*2)+(_cur_x*2));
@@ -83,13 +80,9 @@ int kernel_early_printf(const char *str, ...) {
 	while (*str) {
 
 		// if the '%' character appears, it is a formatting request
-
 		if (*str == '%') {
-
 			str++;		// increment the string pointer to get the format item
-
 			// is an integer print requested?
-
 			if (*str == 'd' || *str == 'i') {
 
 				unsigned int argument = va_arg(args, unsigned int);

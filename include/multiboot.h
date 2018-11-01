@@ -14,6 +14,18 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+/** Multiboot function error return codes */
+
+#define MBOOT_NOT_IMPLEMENTED			0xffff
+
+#define MBOOT_ERROR_INVALID_MEMSIZE		0x0001
+#define MBOOT_ERROR_INVALID_MEMORY_MAP	0x0002
+#define MBOOT_ERROR_NONCOMPLIANT_LOADER	0x0003
+#define MBOOT_ERROR_MISALIGNED_HEADER	0x0004
+#define MBOOT_ERROR_INVALID_BOOTSTRUCT	0x0005
+#define MBOOT_ERROR_ENTRY_NOT_FOUND		0x0006
+#define MBOOT_ERROR_UNSUPPORTED			0x0007
+
 /* Multiboot (original) standard definitions */
 
 // bit-test macros for the boot structure flags
