@@ -11,13 +11,15 @@ SECTIONS {
         src/init/kinit.o
         src/init/kutils.o
         src/init/kterm.o
-        src/init/multiboot/multiboot.o
+        src/init/multiboot/api.o
+		src/init/multiboot/mboot.o
+		src/init/multiboot/mboot2.o
         src/init/memory/kmemory.o
     }
 
     . += 0xC0000000;
 
-    .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000) {
+    .text : AT(ADDR(.text) - 0xC0000000) {
         *(.text)
     }
 
