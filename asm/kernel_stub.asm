@@ -48,7 +48,7 @@ align 4
 [extern kernel_early_init]
 [global early_panic]
 [global kstart]
-[global early_errno]
+[global kinit_errno]
 
 gdt_start:
 
@@ -89,4 +89,14 @@ early_panic:
 
 	jmp $
 
-early_errno dd 0x00
+kinit_errno dd 0x0
+
+[section .kernel_errno]
+[global errno]
+errno dd 0x00
+
+[section .kernelend]
+[global _mbitmap]
+
+_mbitmap:	; this is where the page tables will be located, at the end of the kernel. This address can be adjusted to form a physical address
+	dd 0

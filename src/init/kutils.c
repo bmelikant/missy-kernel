@@ -1,4 +1,4 @@
-#include <early_utils.h>
+#include <init/kutils.h>
 
 void *early_memset(void *dst, int c, size_t count) {
 	char *destination = (char *) dst;

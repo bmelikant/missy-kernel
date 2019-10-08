@@ -1,5 +1,5 @@
-#include <early_terminal.h>
-#include <early_utils.h>
+#include <init/kterm.h>
+#include <init/kutils.h>
 
 #define VIDEO_MEMORY_BASE 		0xB8000
 #define VIDEO_MAX_COLS			80

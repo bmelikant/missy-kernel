@@ -32,13 +32,16 @@ CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
+EARLY_OBJS:=\
+	src/init/kinit.o \
+	src/init/kterm.o \
+	src/init/kutils.o \
+	src/init/multiboot/multiboot.o \
+	src/init/memory/kmemory.o \
+	asm/kernel_stub.o
+
 OBJS:=\
-src/kernel_stub.o \
-src/balloc_stub.o \
-src/multiboot.o \
-asm/kernel_stub.o \
-src/early_terminal.o \
-src/early_utils.o
+$(EARLY_OBJS)
 
 CRTI_OBJ:=asm/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)

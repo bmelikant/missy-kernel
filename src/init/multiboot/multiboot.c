@@ -6,9 +6,9 @@
  *      Author: bmelikant
  */
 
-#include <multiboot.h>
-#include <early_errno.h>
-#include <early_terminal.h>
+#include <init/multiboot/multiboot.h>
+#include <init/kerrno.h>
+#include <init/kterm.h>
 
 // internal data
 static unsigned int boot_magic = 0;
@@ -34,12 +34,12 @@ static multiboot2_entry_mmap 	*mboot2_next_mmap ();
  * @fn int multiboot_data_init (void *, unsigned int): Initialize the multiboot data reader
  * @param mb_ptr - pointer to the start of the multiboot struct
  * @param magic - defines multiboot type
- * @return 0 on success, -1 on error. This function sets early_errno
+ * @return 0 on success, -1 on error. This function sets kinit_errno
  */
 int multiboot_data_init (void *mb_ptr, unsigned int magic) {
 	// check to make sure the multiboot ptr is word-aligned
 	if ((unsigned long) mb_ptr & 7) {
-		early_errno = MBOOT_ERROR_MISALIGNED_HEADER;
+		kinit_errno = MBOOT_ERROR_MISALIGNED_HEADER;
 		return -1;
 	}
 
@@ -51,13 +51,13 @@ int multiboot_data_init (void *mb_ptr, unsigned int magic) {
 		mb_inf = (multiboot_info *) mb_ptr;
 		// at minimum, we must have the memory map and memory size flags present
 		if (!bootflag_check (mb_inf->flags, MEMSZ_PRESENT)) {
-			early_errno = MBOOT_ERROR_INVALID_MEMSIZE;
+			kinit_errno = MBOOT_ERROR_INVALID_MEMSIZE;
 			return -1;
 		}
 
 		mb_memory_sz = (unsigned int)(mb_inf->memorySzLo+mb_inf->memorySzHi);
 		if (!bootflag_check (mb_inf->flags, MMAP_PRESENT)) {
-			early_errno = MBOOT_ERROR_INVALID_MEMORY_MAP;
+			kinit_errno = MBOOT_ERROR_INVALID_MEMORY_MAP;
 			return -1;
 		}
 
@@ -74,7 +74,7 @@ int multiboot_data_init (void *mb_ptr, unsigned int magic) {
 		
 		// the tag doesn't exist... eew
 		if (!msize) {
-			early_errno = MBOOT_ERROR_INVALID_MEMSIZE;
+			kinit_errno = MBOOT_ERROR_INVALID_MEMSIZE;
 			return -1;
 		}
 
@@ -84,7 +84,7 @@ int multiboot_data_init (void *mb_ptr, unsigned int magic) {
 		mb2_memory_map = (multiboot2_tag_mmap *) mboot2_find_tag(MBOOT2_TYPETAG_MMAP);
 
 		if (!mb2_memory_map) {
-			early_errno = MBOOT_ERROR_INVALID_MEMORY_MAP;
+			kinit_errno = MBOOT_ERROR_INVALID_MEMORY_MAP;
 			return -1;
 		}
 
@@ -138,7 +138,7 @@ mmap_data *multiboot_get_mmap_next(mmap_data *buf) {
 	}
 
 	// somehow the magic value was corrupted; flag this to the OS
-	early_errno = MBOOT_ERROR_NONCOMPLIANT_LOADER;
+	kinit_errno = MBOOT_ERROR_NONCOMPLIANT_LOADER;
 	return NULL;
 }
 
@@ -146,11 +146,11 @@ mmap_data *multiboot_get_mmap_next(mmap_data *buf) {
 void *multiboot_find_rdsp() {
 	// ACPI data only exists for multiboot2
 	if (boot_magic == MULTIBOOT2_MAGIC) {
-		early_errno = MBOOT_NOT_IMPLEMENTED;
+		kinit_errno = MBOOT_NOT_IMPLEMENTED;
 		return NULL;
 	}
 
-	early_errno = MBOOT_ERROR_UNSUPPORTED;
+	kinit_errno = MBOOT_ERROR_UNSUPPORTED;
 	return NULL;
 }
 
@@ -182,7 +182,7 @@ memory_map_inf *multiboot_next_mmap() {
 void *mboot2_find_tag(unsigned int tag_type) {
 	// make sure the multiboot2 data exists!!
 	if (!mb2_start) {
-		early_errno = MBOOT_ERROR_INVALID_BOOTSTRUCT;
+		kinit_errno = MBOOT_ERROR_INVALID_BOOTSTRUCT;
 		return NULL;
 	}
 
@@ -199,7 +199,7 @@ void *mboot2_find_tag(unsigned int tag_type) {
 		}
 	}
 
-	early_errno = MBOOT_ERROR_ENTRY_NOT_FOUND;
+	kinit_errno = MBOOT_ERROR_ENTRY_NOT_FOUND;
 	return NULL;
 }
 

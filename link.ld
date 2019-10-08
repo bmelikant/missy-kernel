@@ -3,45 +3,39 @@ ENTRY(kstart)
 
 SECTIONS {
 
-	. = 0xC0000000;
-	_KERNEL_START = .;
+    . = 0x00100000;
 
-	.text ALIGN(4K) : AT(ADDR(.text)-0xBFF00000) {
-		*(.multiboot)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.text)
-	}
+    .startup : ALIGN(4K) {
+        *(.multiboot)
+        *(.bootstrap)
+        src/init/kinit.o
+        src/init/kutils.o
+        src/init/kterm.o
+        src/init/multiboot/multiboot.o
+        src/init/memory/kmemory.o
+    }
 
-	.data ALIGN(4K) : AT(ADDR(.data)-0xBFF00000) {
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.data)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.rodata*)
-	}
+    . += 0xC0000000;
 
-	.bss ALIGN(4K) : AT(ADDR(.bss)-0xBFF00000) {
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(COMMON*)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.bss*)
-	}
+    .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000) {
+        *(.text)
+    }
 
-	_KERNEL_END = .;
-	_KERNEL_SIZE = _KERNEL_END - _KERNEL_START;
+    .data : AT(ADDR(.data) - 0xC0000000) {
+        *(.data)
+        *(.rodata)
+        *(.kernel_errno)
+    }
 
-	. = 0x00100000 + _KERNEL_SIZE;
-	_LOADER_STUB_START = .;
-	
-	.startup BLOCK(4K) : ALIGN(4K) {
-		*(.bootstrap)
-		src/multiboot.o
-		src/balloc_stub.o
-		src/kernel_stub.o
-		src/early_terminal.o
-		src/early_utils.o
-	}
+    .bss : AT(ADDR(.bss) - 0xC0000000) {
+        *(.bss)
+        *(.common)
+    }
 
-	_LOADER_STUB_END = .;
-	_LOADER_STUB_SIZE = _LOADER_STUB_END - _LOADER_STUB_START;
-	_KERNEL_TOTAL_SIZE = _KERNEL_SIZE + _LOADER_STUB_SIZE;
+    kernel_end = .;
+    kernel_end_phys = . - 0xC0000000;
 
-	.kheap BLOCK(4K) : ALIGN(4K) {
-	}
-
-	_KHEAP_START = ADDR(.kheap);
+    .kernelend ALIGN(4K) : AT(ADDR(.kernelend) - 0xC0000000) {
+        *(.kernelend)
+    }
 }

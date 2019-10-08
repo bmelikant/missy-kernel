@@ -12,9 +12,9 @@
 
 #include <kmemory.h>
 #include <multiboot.h>
-#include <early_terminal.h>
-#include <early_utils.h>
-#include <early_errno.h>
+#include <init/kterm.h>
+#include <init/kutils.h>
+#include <init/kerrno.h>
 
 #define PAGE_SIZE 4096
 #define MEMORY_BLOCK_FULL 0xffffffff
@@ -58,7 +58,7 @@ int kernel_early_init(void *multiboot, unsigned int magic) {
 
 	if (multiboot_data_init(multiboot, magic) == -1) {
 		kernel_early_printf("%P Error fetching multiboot data\n");
-		switch(early_errno) {
+		switch(kinit_errno) {
 			case MBOOT_ERROR_INVALID_MEMSIZE:
 				kernel_early_printf("%P Could not find a memory size entry in the multiboot structure!\n");
 				break;
@@ -69,7 +69,7 @@ int kernel_early_init(void *multiboot, unsigned int magic) {
 				kernel_early_printf("%P Multiboot loader is not compliant with either multiboot or multiboot2 specification!\n");
 				break;
 			default:
-				kernel_early_printf("%P An unknown error has occured. Error code: %i\n", early_errno);
+				kernel_early_printf("%P An unknown error has occured. Error code: %i\n", kinit_errno);
 				break;
 		}
 		early_panic();
