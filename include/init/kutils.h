@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+extern void early_panic();
+
 void *early_memset(void *dst, int c, size_t len);
 size_t early_strlen(const char *str);
 char *early_itoa_s(char *str, int num, int base);

@@ -61,6 +61,10 @@ gdt_table:
 	dw gdt_table-gdt_start-1
 	dd gdt_start
 
+early_panic:
+
+	jmp $
+
 kstart:
 	
 	lgdt [gdt_table]
@@ -84,10 +88,6 @@ next:
 	push ebx
 	call kernel_early_init
 	hlt
-
-early_panic:
-
-	jmp $
 
 kinit_errno dd 0x0
 
