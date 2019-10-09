@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define KMEMLOW_ERROR_ENOMEM	0x01
+
 typedef uint32_t* physaddr_p;
 typedef uint32_t* virtaddr_p;
 

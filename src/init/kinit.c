@@ -22,5 +22,7 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic) {
         early_panic();
     }
 
+	// we should initialize the block allocator now, then set up for paging
+	// the asm block will install the paging handler once this function returns
     kmemlow_init_allocator();
 }
