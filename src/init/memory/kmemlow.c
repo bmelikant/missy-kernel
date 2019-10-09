@@ -72,7 +72,7 @@ int kmemlow_init_allocator() {
 	// this is so we can reserve the kernel
 	unsigned int kernel_length = _kend_phys - 0x00100000;
 	reserve_region(0x0, 0x100000);
-	//reserve_region(0x100000,kernel_length);
+	reserve_region(0x100000,kernel_length);
 
 	#ifdef DEBUG_BUILD
 	kernel_early_printf("total blocks: %d\n", total_blocks);
