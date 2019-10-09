@@ -25,6 +25,8 @@ multiboot_fn multiboot_fns[FN_COUNT];
 extern int init_multiboot(multiboot_api_t *api);
 extern int init_multiboot2(multiboot_api_t *api);
 
+static void init_api_struct();
+
 /**
  * Initialize the multiboot driver. The correct driver is selected based on the multiboot magic number
  * If this function does not return 0, it is NOT safe to call any multiboot functions
@@ -45,8 +47,7 @@ int multiboot_init(void *multiboot_ptr, unsigned int header_magic) {
 	boot_magic = header_magic;
 	mboot_ptr = multiboot_ptr;
 
-	// zero out the multiboot api function map
-	early_memset((void*)&api_struct,0,sizeof(api_struct));
+	init_api_struct();
 
 	if (boot_magic == MULTIBOOT_MAGIC) {
 		#ifdef DEBUG_MULTIBOOT
@@ -110,7 +111,7 @@ int multiboot_get_mmap_next(mmap_data *buf) {
  * This issue is only known to affect grub2 bootloader at this point, original grub just skips this code
  */
 void multiboot_relocate(void *kernel_end_ptr) {
-	
+	api_struct.relocate_multiboot(kernel_end_ptr);
 }
 
 int multiboot_unimplemented(void *ignored) {

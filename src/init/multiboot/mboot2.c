@@ -79,6 +79,7 @@ static void multiboot2_install_api_fns(multiboot_api_t *api_struct);
 static int check_multiboot2_tags();
 static void *mboot2_find_tag(unsigned int tag_type);
 static multiboot2_entry_mmap *mboot2_next_mmap();
+size_t mboot2_get_structure_length();
 
 
 /** Multiboot2 functions */
@@ -116,11 +117,35 @@ static int mboot2_get_next_mmap(void *buffer) {
 	mmap_buffer->base = next->base_addr;
 	mmap_buffer->length = next->length;
 	mmap_buffer->type = next->type;
+	#ifdef DEBUG_MULTIBOOT2
+	kernel_early_printf("type: 0x%x\n", mmap_buffer->type);
+	#endif
+
 	return 0;
 }
 
 static int mboot2_relocate_tags(void *kernel_end) {
+	// copy the multiboot struct above the end of the kernel. we want to make sure the multiboot data is dword-aligned
+	uint32_t _new_addr = (uint32_t) kernel_end;
+	if (_new_addr & 0x03) {
+		_new_addr &= ~0x03;
+		_new_addr += 4;
+		#ifdef DEBUG_MULTIBOOT
+		kernel_early_printf("adjusted kernel end address. dword-aligned: 0x%x\n", _new_addr);
+		#endif
+	}
 
+	kernel_end = (void *) _new_addr;
+	size_t mboot_struct_size = mboot2_get_structure_length();
+
+	#ifdef DEBUG_MULTIBOOT2
+	kernel_early_printf("multiboot structure is %d bytes in length\n", mboot_struct_size);
+	#endif
+
+	early_memcpy(kernel_end,mboot_ptr,mboot_struct_size);
+	mboot_ptr = kernel_end;
+
+	return 0;
 }
 
 /** internal functions */
@@ -162,8 +187,6 @@ int check_multiboot2_tags() {
 void *mboot2_find_tag(unsigned int tag_type) {
 	// make sure the multiboot2 data exists!!
 	multiboot2_tag *multiboot_start = (multiboot2_tag*) mboot_ptr;
-	kernel_early_printf("diagnostic: 0x%x%x\n", (unsigned int)(mboot_ptr) >> 16, (unsigned int)(mboot_ptr) &~ 0xffff0000);
-	kernel_early_printf("looking for 0x%x\n", tag_type);
 	if (!multiboot_start) {
 		kinit_errno = MBOOT_ERROR_INVALID_BOOTSTRUCT;
 		return NULL;
@@ -176,8 +199,6 @@ void *mboot2_find_tag(unsigned int tag_type) {
 	for (multiboot2_tag *tag = (multiboot2_tag*) (addr+8);
 			tag->type != MBOOT2_TYPETAG_END;
 			tag = (multiboot2_tag *) ((uint8_t *) tag + ((tag->size + 7) & ~7))) {
-
-		kernel_early_printf("tag type: 0x%x\n", tag->type);
 		// if the tag type matches what we are looking for, return a pointer to the tag
 		if (tag->type == tag_type) {
 			return (void *) tag;
@@ -210,6 +231,24 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 	}
 
 	return NULL;
+}
+
+ size_t mboot2_get_structure_length() {
+	multiboot2_tag *multiboot2_start = (multiboot2_tag *) mboot_ptr;
+	if (!multiboot2_start) {
+		kinit_errno = MBOOT_ERROR_INVALID_BOOTSTRUCT;
+		return 0;
+	}
+
+	unsigned long addr = (unsigned long) multiboot2_start;
+	size_t mboot_struct_size = 0;
+
+	for (multiboot2_tag *tag = (multiboot2_tag*)(addr+8);
+		tag->type != MBOOT2_TYPETAG_END;
+		tag = (multiboot2_tag *)((uint8_t *) tag + ((tag->size +7) & ~7))) {
+			mboot_struct_size += tag->size;
+	}
+	return mboot_struct_size;
 }
 
 void multiboot2_install_api_fns(multiboot_api_t *api_struct) {

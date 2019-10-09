@@ -23,7 +23,7 @@ BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -Ikernel -DDEBUG_MULTIBOOT
+CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -Ikernel -DDEBUG_MULTIBOOT2
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lgcc
 
@@ -39,7 +39,7 @@ EARLY_OBJS:=\
 	src/init/multiboot/api.o \
 	src/init/multiboot/mboot.o \
 	src/init/multiboot/mboot2.o \
-	src/init/memory/kmemory.o \
+	src/init/memory/kmemlow.o \
 	asm/kernel_stub.o
 
 OBJS:=\

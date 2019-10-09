@@ -4,6 +4,7 @@ ENTRY(kstart)
 SECTIONS {
 
     . = 0x00100000;
+    kernel_start = .;
 
     .startup : ALIGN(4K) {
         *(.multiboot)
@@ -14,7 +15,7 @@ SECTIONS {
         src/init/multiboot/api.o
 		src/init/multiboot/mboot.o
 		src/init/multiboot/mboot2.o
-        src/init/memory/kmemory.o
+        src/init/memory/kmemlow.o
     }
 
     . += 0xC0000000;

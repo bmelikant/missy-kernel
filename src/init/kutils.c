@@ -3,7 +3,16 @@
 void *early_memset(void *dst, int c, size_t count) {
 	char *destination = (char *) dst;
 	for (size_t i = 0; i < count; i++) {
-		destination[i++] = c;
+		destination[i] = c;
+	}
+	return dst;
+}
+
+void *early_memcpy(void *dst, const void *src, size_t count) {
+	char *destination = (char *) dst;
+	const char *source = (const char *) src;
+	for (size_t i = 0; i < count; i++) {
+		destination[i] = source[i];
 	}
 	return dst;
 }

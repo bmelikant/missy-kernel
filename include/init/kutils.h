@@ -7,6 +7,7 @@
 extern void early_panic();
 
 void *early_memset(void *dst, int c, size_t len);
+void *early_memcpy(void *dst, const void *src, size_t count);
 size_t early_strlen(const char *str);
 char *early_itoa_s(char *str, int num, int base);
 

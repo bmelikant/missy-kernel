@@ -2,7 +2,7 @@
 
 #include <init/kterm.h>
 #include <init/kutils.h>
-#include <init/memory/kmemory.h>
+#include <init/memory/kmemlow.h>
 #include <init/multiboot/multiboot.h>
 #include <init/kerrno.h>
 
@@ -13,8 +13,6 @@ void early_welcome_message() {
 #endif
 }
 
-
-
 void kernel_early_init(void *mboot_hdr, unsigned int magic) {
     early_welcome_message();
 
@@ -24,5 +22,5 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic) {
         early_panic();
     }
 
-    kmemory_init_allocator();
+    kmemlow_init_allocator();
 }
