@@ -114,7 +114,7 @@ void multiboot_relocate(void *kernel_end_ptr) {
 	api_struct.relocate_multiboot(kernel_end_ptr);
 }
 
-int multiboot_unimplemented(void *ignored) {
+int multiboot_unimplemented(__attribute__((unused)) void *ignored) {
 	#ifdef DEBUG_MULTIBOOT
 	kernel_early_puts("Unimplemented API call");
 	#endif

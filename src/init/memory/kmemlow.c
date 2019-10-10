@@ -3,6 +3,10 @@
 #include <init/kterm.h>
 #include <init/kerrno.h>
 
+#ifndef _cplusplus
+#include <stdbool.h>
+#endif
+
 #define PAGE_SIZE 4096
 #define KILOBYTES 1024
 #define BLOCKS_PER_UNIT 32
@@ -15,7 +19,6 @@ static unsigned int total_blocks = 0;
 static unsigned int used_blocks = 0;
 
 /** forward declarations of internal functions */
-static void reserve_first_megabyte();
 static void reserve_region(unsigned int start, unsigned int length);
 static void free_region(unsigned int start, unsigned int length);
 static unsigned int first_free();
@@ -193,5 +196,29 @@ unsigned int first_free() {
 }
 
 unsigned int first_free_s(size_t count) {
+	for (size_t i = 0; i < total_blocks / BLOCKS_PER_UNIT; i++) {
+		if (_mbitmap_physical[i] != FULL_BITMAP_UNIT) {
+			for (size_t j = 0; j < BLOCKS_PER_UNIT; j++) {
+				if (((_mbitmap_physical[i] >> j) & 1) == 0) {
+					unsigned int first_block = (i*BLOCKS_PER_UNIT)+j;
+				}
+			}
+		}
+	}
+}
+
+unsigned int find_free_blocks_in_unit(unsigned int *unit, size_t current_idx, size_t count) {
+	for (size_t i = 0; i < BLOCKS_PER_UNIT; i++) {
+		if (((*unit >> i) & 1) == 0) {
+			if (count == 1) {
+				return (current_idx*BLOCKS_PER_UNIT)+i;
+			} else {
+
+			}
+		}
+	}
+}
+
+bool blocks_free(unsigned int *unit, size_t curidx, size_t count) {
 
 }
