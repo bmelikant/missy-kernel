@@ -5,6 +5,3 @@
 #include <kernel/driver/i386/kbinput.h>
 #endif
 
-int kterm_write_string(const char *str) {
-	
-}
