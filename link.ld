@@ -24,7 +24,7 @@ SECTIONS {
         src/init/i386/kterm.o
     }
 
-    . = 0xC0000000;
+    . += 0xC0000000;
 
     .text : AT(ADDR(.text) - 0xC0000000) {
 		*(.paging_jump)

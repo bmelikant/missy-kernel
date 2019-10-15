@@ -115,6 +115,10 @@ void *kmemlow_get_kernel_endptr() {
 	return _kernel_end_physical;
 }
 
+void *kmemlow_get_bitmap_ptr() {
+	return _mbitmap_physical;
+}
+
 void *kmemlow_alloc() {
 	uint32_t free_block = first_free();
 	#ifdef DEBUG_KMEMLOW

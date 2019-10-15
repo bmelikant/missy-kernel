@@ -46,8 +46,13 @@ EARLY_OBJS:=\
 	src/init/multiboot/mboot.o \
 	src/init/multiboot/mboot2.o 
 
+KERNEL_OBJS:=\
+	src/kernel/kernel.o \
+	src/kernel/i386/display.o
+
 OBJS:=\
-$(EARLY_OBJS)
+$(EARLY_OBJS) \
+$(KERNEL_OBJS)
 
 CRTI_OBJ:=src/kernel/asm/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)

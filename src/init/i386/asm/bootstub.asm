@@ -40,11 +40,6 @@ multiboot_hdr:
 [section .bootstrap]
 align 4
 
-%define VIDEO_MEMORY 	0xb8000
-%define VIDEO_COLS 		80
-%define VIDEO_ROWS 		25
-%define COLOR_ATTRIBUTE 0x70
-
 [extern kernel_early_init]
 [extern _page_directory]
 [global early_panic]
@@ -63,6 +58,10 @@ gdt_table:
 	dd gdt_start
 
 kinit_errno dd 0x0
+_kernel_params:
+	kernel_stack 	dd 0
+	memory_bitmap 	dd 0
+	kernel_heap		dd 0
 
 early_panic:
 
@@ -87,10 +86,11 @@ next:
 	mov ss,ax
 	mov esp,0x90000
 	
+	push dword _kernel_params
 	push edx
 	push ebx
 	call kernel_early_init
-	
+
 	; enter paging mode
 	mov eax,dword [_page_directory]
 	mov cr3,eax
@@ -99,16 +99,18 @@ next:
 	or eax,0x80000001
 	mov cr0,eax
 
-	mov eax,0xdeadbeef
+	xor eax,eax
 	jmp _paging_start
 
 [section .paging_jump]
-
+[extern kernel_main]
 _paging_start:
+
+	push dword _kernel_params
+	call kernel_main
 
 	cli
 	jmp $
-	hlt
 
 [section .kernel_errno]
 [global errno]
