@@ -67,7 +67,7 @@ void *ki_get_kernel_end_virtual() {
 }
 
 void *ki_get_kernel_stack_top() {
-	return (void*)(KERNEL_STACK_MAPPING);
+	return (void*)((KERNEL_STACK_MAPPING+PAGE_SIZE)-1);
 }
 
 int create_page_directory() {

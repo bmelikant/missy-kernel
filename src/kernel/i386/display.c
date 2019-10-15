@@ -48,14 +48,14 @@ void display_write(unsigned int c) {
 	} else if (c == '\t') {
 		tabulate(write_loc);
 	} else if (c == '\n') {
+		*write_loc=CLEAR_SCREEN_WORD;		// clear out the blinky cursor
 		x_loc=0;
 		y_loc++;
+		update_blinky_cursor();
 	} else {
-		*write_loc = (uint16_t)((color_attrib << 8) | (c &~ 0xffffff00));
+		*write_loc = (uint16_t)((color_attrib << 8) | (uint8_t)(c));
 		increment_draw_location();
 	}
-
-	// print the character, then the cursor
 }
 
 void backspace(uint16_t *write_loc) {

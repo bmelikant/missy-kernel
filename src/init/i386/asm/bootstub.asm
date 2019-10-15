@@ -106,10 +106,13 @@ next:
 [extern kernel_main]
 _paging_start:
 
+	; fix the stack... ugh
+	mov esp,dword [kernel_stack]
+	mov ebp,esp
+
 	push dword _kernel_params
 	call kernel_main
 
-	cli
 	jmp $
 
 [section .kernel_errno]

@@ -28,18 +28,18 @@ SECTIONS {
 
     .text : AT(ADDR(.text) - 0xC0000000) {
 		*(.paging_jump)
-        *(.text)
+        *(.text .text.*)
     }
 
     .data : AT(ADDR(.data) - 0xC0000000) {
-        *(.data)
-        *(.rodata)
+        *(.data .data.*)
+        *(.rodata .rodata.*)
         *(.kernel_errno)
     }
 
     .bss : AT(ADDR(.bss) - 0xC0000000) {
-        *(.bss)
-        *(.common)
+        *(.bss .bss.*)
+        *(.common .common.*)
     }
 
     kernel_end = .;
