@@ -1,6 +1,12 @@
 #include <init/kutils.h>
+#include <init/kerrno.h>
+#include <init/kterm.h>
 
-void *early_memset(void *dst, int c, size_t count) {
+#ifndef _cplusplus
+#include <stdbool.h>
+#endif
+
+void *ki_memset(void *dst, int c, size_t count) {
 	char *destination = (char *) dst;
 	for (size_t i = 0; i < count; i++) {
 		destination[i] = c;
@@ -8,7 +14,7 @@ void *early_memset(void *dst, int c, size_t count) {
 	return dst;
 }
 
-void *early_memcpy(void *dst, const void *src, size_t count) {
+void *ki_memcpy(void *dst, const void *src, size_t count) {
 	char *destination = (char *) dst;
 	const char *source = (const char *) src;
 	for (size_t i = 0; i < count; i++) {
@@ -17,43 +23,36 @@ void *early_memcpy(void *dst, const void *src, size_t count) {
 	return dst;
 }
 
-const char 	lettermap [] = "0123456789abcdef";
-char		buffer[32];
-extern int 	errno;
-
-size_t early_strlen(const char *str) {
+size_t ki_strlen(const char *str) {
 	char *s = (char *) str;
 	while (*s++);
 	return (size_t) (s-str)-1;
 }
 
-char *early_itoa_s(char *str, int num, int base) {
-	int pos  = 0;
-	int opos = 0;
-	int top  = 0;
+static const char lettermap [] = "0123456789abcdef";
+static void zero_string(char *buf) {
+	buf[0] = '0';
+	buf[1] = '\0';
+}
 
-	// base must be < 16 and i cannot be zero
-	if (num == 0 || base > 16) {
-
-		str[0] = '0';
-		str[1] = '\0';
-
-		return str;
+void ki_make_ulong_string(char *buffer, unsigned long number, int base) {
+	// zero out the buffer string
+	ki_memset(buffer,0,MAXCHARS);
+	if (number == 0) {
+		zero_string(buffer);
+		return;
+	}
+	if (base > 16 || base < 2) {
+		kinit_errno = EINVAL;
+		return;
 	}
 
-	// now transform the number to a string
-	while (num > 0) {
-
-		buffer[pos] = lettermap[num % base];
-		pos++;
-		num /= base;
+	// we want to point at the first available character. preserve the terminating null character
+	char *writeptr = (char *)(buffer+(MAXCHARS-1));
+	while (number > 0) {
+		*(--writeptr) = lettermap[number % base];
+		number /= base;
 	}
 
-	top = pos--;
-
-	for (opos = 0; opos < top; pos--,opos++)
-		str[opos] = buffer[pos];
-
-	str[opos] = 0;
-	return str;
+	while ((*buffer++ = *writeptr++)) ;
 }

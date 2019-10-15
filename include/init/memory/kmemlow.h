@@ -12,6 +12,7 @@ typedef uint32_t* virtaddr_p;
 int kmemlow_init_allocator();       // initialize the physical memory manager
 void *kmemlow_alloc();              // allocate a single block of memory
 void  kmemlow_free(void *);         // free a single block of memory
+void *kmemlow_get_kernel_endptr();	// get a pointer to the first 4kb aligned block above the kernel
 
 unsigned int kmemlow_get_total_blocks();
 unsigned int kmemlow_get_free_blocks();

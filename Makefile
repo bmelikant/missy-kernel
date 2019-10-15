@@ -32,23 +32,27 @@ CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
+EARLY_ARCH_I386_OBJS:=\
+	src/init/i386/memory/kmemlow.o \
+	src/init/i386/memory/paging.o \
+	src/init/i386/kterm.o \
+	src/init/i386/asm/bootstub.o 
+
 EARLY_OBJS:=\
+	$(EARLY_ARCH_I386_OBJS) \
 	src/init/kinit.o \
-	src/init/kterm.o \
 	src/init/kutils.o \
 	src/init/multiboot/api.o \
 	src/init/multiboot/mboot.o \
-	src/init/multiboot/mboot2.o \
-	src/init/memory/kmemlow.o \
-	asm/kernel_stub.o
+	src/init/multiboot/mboot2.o 
 
 OBJS:=\
 $(EARLY_OBJS)
 
-CRTI_OBJ:=asm/crti.o
+CRTI_OBJ:=src/kernel/asm/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ:=asm/crtn.o
+CRTN_OBJ:=src/kernel/asm/crtn.o
 
 ALL_MY_OBJS:=\
 $(CRTI_OBJ) \

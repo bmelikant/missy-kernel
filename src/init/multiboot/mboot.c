@@ -126,7 +126,7 @@ static int mboot_get_next_mmap_entry(void *buffer) {
 /** internal functions */
 int check_multiboot_flags(uint32_t flags) {
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_printf("checking multiboot flags...\n");
+	ki_printf("checking multiboot flags...\n");
 	#endif
 	size_t flag_entries = sizeof(multiboot_required) / sizeof(multiboot_flagcheck_t);
 	for (size_t i = 0; i < flag_entries; i++) {
@@ -159,7 +159,7 @@ memory_map_inf *multiboot_next_mmap() {
 
 void multiboot_install_api_fns(multiboot_api_t *api_fns) {
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_printf("installing API functions...\n");
+	ki_printf("installing API functions...\n");
 	#endif
 	api_fns->get_memory_size = mboot_get_memory_size;
 	api_fns->get_next_mmap_entry = mboot_get_next_mmap_entry;

@@ -51,17 +51,17 @@ int multiboot_init(void *multiboot_ptr, unsigned int header_magic) {
 
 	if (boot_magic == MULTIBOOT_MAGIC) {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Multiboot1-compliant loader\n");
+		ki_printf("Multiboot1-compliant loader\n");
 		#endif
 		return init_multiboot(&api_struct);
 	} else if (boot_magic == MULTIBOOT2_MAGIC) {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Multiboot2-compliant loader\n");
+		ki_printf("Multiboot2-compliant loader\n");
 		#endif
 		return init_multiboot2(&api_struct);
 	} else {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Non-compliant loader\n");
+		ki_printf("Non-compliant loader\n");
 		#endif
 		kinit_errno = MBOOT_ERROR_UNSUPPORTED;
 		return -1;
@@ -77,11 +77,11 @@ unsigned int multiboot_get_memsz () {
 	unsigned int memsize = 0;
 	if (api_struct.get_memory_size(&memsize) != -1) {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Multiboot API found memory size: %d\n", memsize);
+		ki_printf("Multiboot API found memory size: %d\n", memsize);
 		#endif
 	} else {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Error getting memory size: 0x%x\n", kinit_errno);
+		ki_printf("Error getting memory size: 0x%x\n", kinit_errno);
 		#endif
 	}
 	return memsize;

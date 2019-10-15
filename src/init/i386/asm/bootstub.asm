@@ -46,6 +46,7 @@ align 4
 %define COLOR_ATTRIBUTE 0x70
 
 [extern kernel_early_init]
+[extern _page_directory]
 [global early_panic]
 [global kstart]
 [global kinit_errno]
@@ -60,6 +61,8 @@ gdt_table:
 
 	dw gdt_table-gdt_start-1
 	dd gdt_start
+
+kinit_errno dd 0x0
 
 early_panic:
 
@@ -87,9 +90,25 @@ next:
 	push edx
 	push ebx
 	call kernel_early_init
-	hlt
+	
+	; enter paging mode
+	mov eax,dword [_page_directory]
+	mov cr3,eax
 
-kinit_errno dd 0x0
+	mov eax,cr0
+	or eax,0x80000001
+	mov cr0,eax
+
+	mov eax,0xdeadbeef
+	jmp _paging_start
+
+[section .paging_jump]
+
+_paging_start:
+
+	cli
+	jmp $
+	hlt
 
 [section .kernel_errno]
 [global errno]

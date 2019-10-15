@@ -101,14 +101,14 @@ static int mboot2_get_memory_size(void *buffer) {
 
 static int mboot2_get_next_mmap(void *buffer) {
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_printf("getting memory map entry %d\n", current_mmap_entry);
+	ki_printf("getting memory map entry %d\n", current_mmap_entry);
 	#endif
 	mmap_data *mmap_buffer = (mmap_data *) buffer;
 	multiboot2_entry_mmap *next = mboot2_next_mmap();
 	if (!next) {
 		#ifdef DEBUG_MULTIBOOT
 		if (kinit_errno == MBOOT_ERROR_ENTRY_NOT_FOUND) kernel_early_puts("The memory map could not be located\n");
-		else kernel_early_printf("Reached end of memory map\n");
+		else ki_printf("Reached end of memory map\n");
 		#endif
 		return -1;
 	}
@@ -117,7 +117,7 @@ static int mboot2_get_next_mmap(void *buffer) {
 	mmap_buffer->length = next->length;
 	mmap_buffer->type = next->type;
 	#ifdef DEBUG_MULTIBOOT2
-	kernel_early_printf("type: 0x%x\n", mmap_buffer->type);
+	ki_printf("type: 0x%x\n", mmap_buffer->type);
 	#endif
 
 	return 0;
@@ -127,7 +127,7 @@ static int mboot2_relocate_tags(void *kernel_end) {
 	#ifdef DEBUG_MULTIBOOT2
 	unsigned int oldloc = (unsigned int) mboot_ptr;
 	unsigned int newloc = (unsigned int) kernel_end;
-	kernel_early_printf("relocating multiboot from 0x%x to 0x%x\n", oldloc, newloc);
+	ki_printf("relocating multiboot from 0x%x to 0x%x\n", oldloc, newloc);
 	#endif
 	// copy the multiboot struct above the end of the kernel. we want to make sure the multiboot data is dword-aligned
 	// to be safe here, we are going to add the length of the boot struct to the new kernel end pointer
@@ -136,10 +136,10 @@ static int mboot2_relocate_tags(void *kernel_end) {
 	kernel_end = (void *)(kernel_end + mboot_struct_size);
 
 	#ifdef DEBUG_MULTIBOOT2
-	kernel_early_printf("multiboot structure is %d bytes in length\n", mboot_struct_size);
+	ki_printf("multiboot structure is %d bytes in length\n", mboot_struct_size);
 	#endif
 
-	early_memcpy(kernel_end,mboot_ptr,mboot_struct_size);
+	ki_memcpy(kernel_end,mboot_ptr,mboot_struct_size);
 	mboot_ptr = kernel_end;
 
 	return 0;
@@ -149,29 +149,29 @@ static int mboot2_relocate_tags(void *kernel_end) {
 
 int check_multiboot2_tags() {
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_printf("checking multiboot tags...\n");
+	ki_printf("checking multiboot tags...\n");
 	#endif
 	size_t required_tag_count = sizeof(multiboot2_required) / sizeof(multiboot2_tagcheck_t);
 	for (size_t i = 0; i < required_tag_count; i++) {
 		#ifdef DEBUG_MULTIBOOT
-		kernel_early_printf("Checking for multiboot tag: %d\n", multiboot2_required[i].tag);
+		ki_printf("Checking for multiboot tag: %d\n", multiboot2_required[i].tag);
 		#endif
 		void *current_tag = mboot2_find_tag(multiboot2_required[i].tag);
 		if (!current_tag) {
 			#ifdef DEBUG_MULTIBOOT
-			kernel_early_printf("Tag %d was not found\n", multiboot2_required[i].tag);
+			ki_printf("Tag %d was not found\n", multiboot2_required[i].tag);
 			#endif
 			// tag wasn't found; was it due to an invalid multiboot header?
 			if (kinit_errno != MBOOT_ERROR_INVALID_BOOTSTRUCT) {
 				#ifdef DEBUG_MULTIBOOT
-				kernel_early_printf("Cause: %d\n", multiboot2_required[i].errno);
+				ki_printf("Cause: %d\n", multiboot2_required[i].errno);
 				#endif
 				kinit_errno = multiboot2_required[i].errno;
 			}
 			return -1;
 		} else {
 			#ifdef DEBUG_MULTIBOOT
-			kernel_early_printf("Tag %d was found\n", multiboot2_required[i].tag);
+			ki_printf("Tag %d was found\n", multiboot2_required[i].tag);
 			#endif
 		}
 	}
@@ -192,7 +192,7 @@ void *mboot2_find_tag(unsigned int tag_type) {
 	// multiboot is weird; need to make this an unsigned log for this to work right!
 	unsigned long addr = (unsigned long)(multiboot_start);
 	#ifdef DEBUG_MULTIBOOT2
-	kernel_early_printf("addr: 0x%x\n", (unsigned int) addr);
+	ki_printf("addr: 0x%x\n", (unsigned int) addr);
 	#endif
 	// okay, loop thru the multiboot2 tags until we find the right one
 	for (multiboot2_tag *tag = (multiboot2_tag*) (addr+8);
@@ -201,7 +201,7 @@ void *mboot2_find_tag(unsigned int tag_type) {
 		// if the tag type matches what we are looking for, return a pointer to the tag
 		if (tag->type == tag_type) {
 			#ifdef DEBUG_MULTIBOOT2
-			kernel_early_printf("found tag type 0x%x\n", tag->type);
+			ki_printf("found tag type 0x%x\n", tag->type);
 			#endif
 			return (void *) tag;
 		}
@@ -224,8 +224,8 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 	unsigned int mmap_entries = ((memory_map_ptr->tag.size-sizeof(multiboot2_tag_mmap)) / memory_map_ptr->entry_sz);
 	#ifdef DEBUG_MULTIBOOT2
 	unsigned int mmap_ptr_value = (unsigned int) memory_map_ptr;
-	kernel_early_printf("first mmap_entry: 0x%x\n", mmap_ptr_value);
-	kernel_early_printf("mmap_entries: 0x%x\n", mmap_entries);
+	ki_printf("first mmap_entry: 0x%x\n", mmap_ptr_value);
+	ki_printf("mmap_entries: 0x%x\n", mmap_entries);
 	#endif
 	// locate the memory map entry
 	if (current_mmap_entry < mmap_entries) {
@@ -234,7 +234,7 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 
 		#ifdef DEBUG_MULTIBOOT2
 		unsigned int entryaddr = (unsigned int) entry;
-		kernel_early_printf("current mmap entry is at 0x%x\n", entryaddr);
+		ki_printf("current mmap entry is at 0x%x\n", entryaddr);
 		#endif
 
 		current_mmap_entry++;
@@ -258,7 +258,7 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 
 void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_printf("installing API functions...\n");
+	ki_printf("installing API functions...\n");
 	#endif
 	api_struct->get_memory_size = mboot2_get_memory_size;
 	api_struct->get_next_mmap_entry = mboot2_get_next_mmap;
