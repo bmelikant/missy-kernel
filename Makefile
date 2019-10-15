@@ -23,7 +23,7 @@ BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -Ikernel
+CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -Ikernel -DDEBUG_KMEMLOW 
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lgcc
 
@@ -32,18 +32,32 @@ CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
-OBJS:=\
-src/kernel_stub.o \
-src/balloc_stub.o \
-src/multiboot.o \
-asm/kernel_stub.o \
-src/early_terminal.o \
-src/early_utils.o
+EARLY_ARCH_I386_OBJS:=\
+	src/init/i386/memory/kmemlow.o \
+	src/init/i386/memory/paging.o \
+	src/init/i386/kterm.o \
+	src/init/i386/asm/bootstub.o 
 
-CRTI_OBJ:=asm/crti.o
+EARLY_OBJS:=\
+	$(EARLY_ARCH_I386_OBJS) \
+	src/init/kinit.o \
+	src/init/kutils.o \
+	src/init/multiboot/api.o \
+	src/init/multiboot/mboot.o \
+	src/init/multiboot/mboot2.o 
+
+KERNEL_OBJS:=\
+	src/kernel/kernel.o \
+	src/kernel/i386/display.o
+
+OBJS:=\
+$(EARLY_OBJS) \
+$(KERNEL_OBJS)
+
+CRTI_OBJ:=src/kernel/asm/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ:=asm/crtn.o
+CRTN_OBJ:=src/kernel/asm/crtn.o
 
 ALL_MY_OBJS:=\
 $(CRTI_OBJ) \

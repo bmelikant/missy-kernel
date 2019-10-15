@@ -40,15 +40,11 @@ multiboot_hdr:
 [section .bootstrap]
 align 4
 
-%define VIDEO_MEMORY 	0xb8000
-%define VIDEO_COLS 		80
-%define VIDEO_ROWS 		25
-%define COLOR_ATTRIBUTE 0x70
-
 [extern kernel_early_init]
+[extern _page_directory]
 [global early_panic]
 [global kstart]
-[global early_errno]
+[global kinit_errno]
 
 gdt_start:
 
@@ -60,6 +56,16 @@ gdt_table:
 
 	dw gdt_table-gdt_start-1
 	dd gdt_start
+
+kinit_errno dd 0x0
+_kernel_params:
+	kernel_stack 	dd 0
+	memory_bitmap 	dd 0
+	kernel_heap		dd 0
+
+early_panic:
+
+	jmp $
 
 kstart:
 	
@@ -80,13 +86,41 @@ next:
 	mov ss,ax
 	mov esp,0x90000
 	
+	push dword _kernel_params
 	push edx
 	push ebx
 	call kernel_early_init
-	hlt
 
-early_panic:
+	; enter paging mode
+	mov eax,dword [_page_directory]
+	mov cr3,eax
+
+	mov eax,cr0
+	or eax,0x80000001
+	mov cr0,eax
+
+	xor eax,eax
+	jmp _paging_start
+
+[section .paging_jump]
+[extern kernel_main]
+_paging_start:
+
+	; fix the stack... ugh
+	mov esp,dword [kernel_stack]
+	mov ebp,esp
+
+	push dword _kernel_params
+	call kernel_main
 
 	jmp $
 
-early_errno dd 0x00
+[section .kernel_errno]
+[global errno]
+errno dd 0x00
+
+[section .kernelend]
+[global _mbitmap]
+
+_mbitmap:	; this is where the page tables will be located, at the end of the kernel. This address can be adjusted to form a physical address
+	dd 0

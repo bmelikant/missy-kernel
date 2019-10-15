@@ -4,9 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void *early_memset(void *dst, int c, size_t len);
-size_t early_strlen(const char *str);
-char *early_itoa_s(char *str, int num, int base);
+#define MAXCHARS 65
+
+extern void early_panic();
+
+void *ki_memset(void *dst, int c, size_t len);
+void *ki_memcpy(void *dst, const void *src, size_t count);
+size_t ki_strlen(const char *str);
+void ki_make_ulong_string(char *buffer, unsigned long number, int base);
 
 inline uint8_t inportb_low(uint16_t port) {
 	uint8_t ret;

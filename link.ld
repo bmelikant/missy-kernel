@@ -3,45 +3,49 @@ ENTRY(kstart)
 
 SECTIONS {
 
-	. = 0xC0000000;
-	_KERNEL_START = .;
+	. = 0x0007e000;
 
-	.text ALIGN(4K) : AT(ADDR(.text)-0xBFF00000) {
-		*(.multiboot)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.text)
-	}
-
-	.data ALIGN(4K) : AT(ADDR(.data)-0xBFF00000) {
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.data)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.rodata*)
-	}
-
-	.bss ALIGN(4K) : AT(ADDR(.bss)-0xBFF00000) {
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(COMMON*)
-		EXCLUDE_FILE (*src/balloc_stub.o *src/kernel_stub.o *src/multiboot.o *src/early_terminal.o *src/early_utils.o) *(.bss*)
-	}
-
-	_KERNEL_END = .;
-	_KERNEL_SIZE = _KERNEL_END - _KERNEL_START;
-
-	. = 0x00100000 + _KERNEL_SIZE;
-	_LOADER_STUB_START = .;
-	
-	.startup BLOCK(4K) : ALIGN(4K) {
+	.initasm : AT(ADDR(.initasm)) {
 		*(.bootstrap)
-		src/multiboot.o
-		src/balloc_stub.o
-		src/kernel_stub.o
-		src/early_terminal.o
-		src/early_utils.o
 	}
 
-	_LOADER_STUB_END = .;
-	_LOADER_STUB_SIZE = _LOADER_STUB_END - _LOADER_STUB_START;
-	_KERNEL_TOTAL_SIZE = _KERNEL_SIZE + _LOADER_STUB_SIZE;
+    . = 0x00100000;
+    kernel_start = .;
 
-	.kheap BLOCK(4K) : ALIGN(4K) {
-	}
+    .startup : ALIGN(4K) {
+        *(.multiboot)
+        src/init/kinit.o
+        src/init/kutils.o
+        src/init/multiboot/api.o
+		src/init/multiboot/mboot.o
+		src/init/multiboot/mboot2.o
+        src/init/i386/memory/kmemlow.o
+		src/init/i386/memory/paging.o
+        src/init/i386/kterm.o
+    }
 
-	_KHEAP_START = ADDR(.kheap);
+    . += 0xC0000000;
+
+    .text : AT(ADDR(.text) - 0xC0000000) {
+		*(.paging_jump)
+        *(.text .text.*)
+    }
+
+    .data : AT(ADDR(.data) - 0xC0000000) {
+        *(.data .data.*)
+        *(.rodata .rodata.*)
+        *(.kernel_errno)
+    }
+
+    .bss : AT(ADDR(.bss) - 0xC0000000) {
+        *(.bss .bss.*)
+        *(.common .common.*)
+    }
+
+    kernel_end = .;
+    kernel_end_phys = . - 0xC0000000;
+
+    .kernelend ALIGN(4K) : AT(ADDR(.kernelend) - 0xC0000000) {
+        *(.kernelend)
+    }
 }
