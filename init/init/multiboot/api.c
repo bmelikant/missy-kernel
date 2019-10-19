@@ -6,10 +6,10 @@
  *      Author: bmelikant
  */
 
-#include <init/multiboot/multiboot.h>
-#include <init/kerrno.h>
-#include <init/kterm.h>
-#include <init/kutils.h>
+#include <multiboot/multiboot.h>
+#include <kerrno.h>
+#include <kterm.h>
+#include <kutils.h>
 
 // internal data
 unsigned int boot_magic = 0;

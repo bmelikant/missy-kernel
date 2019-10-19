@@ -6,6 +6,7 @@ SECTIONS {
 	. = 0x0007e000;
 
 	.initasm : AT(ADDR(.initasm)) {
+		*(.multiboot)
 		*(.bootstrap)
 	}
 
@@ -13,15 +14,14 @@ SECTIONS {
     kernel_start = .;
 
     .startup : ALIGN(4K) {
-        *(.multiboot)
-        src/init/kinit.o
-        src/init/kutils.o
-        src/init/multiboot/api.o
-		src/init/multiboot/mboot.o
-		src/init/multiboot/mboot2.o
-        src/init/i386/memory/kmemlow.o
-		src/init/i386/memory/paging.o
-        src/init/i386/kterm.o
+        ../init/init/kinit.o
+        ../init/init/kutils.o
+        ../init/init/multiboot/api.o
+		../init/init/multiboot/mboot.o
+		../init/init/multiboot/mboot2.o
+        ../init/init/memory/kmemlow.o
+		../init/init/memory/paging.o
+        ../init/init/kterm.o
     }
 
     . += 0xC0000000;

@@ -1,5 +1,5 @@
-#include <init/kparams.h>
-#include <kernel/driver/i386/display.h>
+#include <kparams.h>
+#include <kernel/display.h>
 
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();

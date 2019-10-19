@@ -1,5 +1,5 @@
-#include <init/kterm.h>
-#include <init/kutils.h>
+#include <kterm.h>
+#include <kutils.h>
 
 #ifndef _cplusplus
 #include <stdbool.h>

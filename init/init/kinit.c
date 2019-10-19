@@ -1,12 +1,12 @@
 #include <version.h>
 
-#include <init/kterm.h>
-#include <init/kutils.h>
-#include <init/memory/kmemlow.h>
-#include <init/memory/paging.h>
-#include <init/multiboot/multiboot.h>
-#include <init/kerrno.h>
-#include <init/kparams.h>
+#include <kterm.h>
+#include <kutils.h>
+#include <memory/kmemlow.h>
+#include <memory/paging.h>
+#include <multiboot/multiboot.h>
+#include <kerrno.h>
+#include <kparams.h>
 
 void early_welcome_message() {
     ki_printf("missy kernel %s\n", KERNEL_VERSION_STRING);

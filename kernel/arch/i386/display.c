@@ -1,5 +1,5 @@
-#include <kernel/driver/i386/display.h>
-#include <kernel/driver/i386/ports.h>
+#include <kernel/display.h>
+#include <kernel/ports.h>
 
 #include <stdint.h>
 #include <stddef.h>

@@ -1,7 +1,7 @@
-#include <init/multiboot/multiboot.h>
-#include <init/kterm.h>
-#include <init/kutils.h>
-#include <init/kerrno.h>
+#include <multiboot/multiboot.h>
+#include <kterm.h>
+#include <kutils.h>
+#include <kerrno.h>
 
 // multiboot_info structure
 

@@ -1,7 +1,7 @@
-#include <init/memory/kmemlow.h>
-#include <init/multiboot/multiboot.h>
-#include <init/kterm.h>
-#include <init/kerrno.h>
+#include <memory/kmemlow.h>
+#include <multiboot/multiboot.h>
+#include <kterm.h>
+#include <kerrno.h>
 
 #ifndef _cplusplus
 #include <stdbool.h>

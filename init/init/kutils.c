@@ -1,6 +1,6 @@
-#include <init/kutils.h>
-#include <init/kerrno.h>
-#include <init/kterm.h>
+#include <kutils.h>
+#include <kerrno.h>
+#include <kterm.h>
 
 #ifndef _cplusplus
 #include <stdbool.h>
