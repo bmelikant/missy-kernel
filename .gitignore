@@ -1,6 +1,9 @@
-/.vscode
 *.o
-kernel_test
 *.iso
+*.d
+*.a
+missy.kernel
 missy.iso
 /isodir/
+/sysroot/
+/.vscode
