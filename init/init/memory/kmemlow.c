@@ -17,6 +17,7 @@ unsigned int *_mbitmap_physical;
 
 static unsigned int total_blocks = 0;
 static unsigned int used_blocks = 0;
+static uint32_t bitmap_size = 0;
 static void *_kernel_end_physical = NULL;
 
 /** forward declarations of internal functions */
@@ -59,15 +60,19 @@ int kmemlow_init_allocator() {
     ki_printf("Total system memory: %d kilobytes\n", memsz);
 
     total_blocks = used_blocks = (memsz*KILOBYTES) / PAGE_SIZE;
-	unsigned int bitmap_sz = total_blocks / BLOCKS_PER_UNIT;
+	bitmap_size = total_blocks / BLOCKS_PER_UNIT;
+	
+	// round up in case the total blocks are not divisible by 32
+	if (total_blocks%BLOCKS_PER_UNIT > 0) bitmap_size++;
+
 	#ifdef DEBUG_KMEMLOW
-	ki_printf("the bitmap contains %d unsigned int values\n", bitmap_sz);
+	ki_printf("the bitmap contains %d unsigned int values\n", bitmap_size);
     ki_printf("block allocator has %d total blocks\n", total_blocks);
 	ki_printf("all blocks will be marked as used until allocator is fully initialized\n");
 	#endif
 
 	// find a valid address at the end of the block allocator reserved region
-	unsigned int _kend_phys = start_address + (bitmap_sz*sizeof(unsigned int));
+	unsigned int _kend_phys = start_address + (bitmap_size*sizeof(unsigned int));
 	_kend_phys &= ~0x00000fff;
 	_kend_phys += PAGE_SIZE;
 	_kernel_end_physical = (void *)(_kend_phys);
@@ -80,7 +85,7 @@ int kmemlow_init_allocator() {
 	// grub2 multiboot data needs to be relocated beyond the end of the memory allocator >:(
 	// for other multiboot-compliant loaders this probably won't be a problem so this calls a dummy method in those cases
 	multiboot_relocate(_kernel_end_physical);
-	for (unsigned int i = 0; i < bitmap_sz; i++) {
+	for (unsigned int i = 0; i < bitmap_size; i++) {
 		_mbitmap_physical[i] = 0xffffffff;
 	}
 
@@ -117,6 +122,10 @@ void *kmemlow_get_kernel_endptr() {
 
 void *kmemlow_get_bitmap_ptr() {
 	return _mbitmap_physical;
+}
+
+uint32_t kmemlow_get_bitmap_size() {
+	return bitmap_size;
 }
 
 void *kmemlow_alloc() {

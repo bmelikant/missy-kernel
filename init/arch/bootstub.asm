@@ -60,8 +60,9 @@ gdt_table:
 kinit_errno dd 0x0
 _kernel_params:
 	kernel_stack 	dd 0
-	memory_bitmap 	dd 0
 	kernel_heap		dd 0
+	memory_bitmap 	dd 0
+	bitmap_size		dd 0
 
 early_panic:
 

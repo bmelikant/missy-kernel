@@ -34,9 +34,11 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic, _kernel_params_t *kp
 	kparams->kernel_stack = ki_get_kernel_stack_top();
 	kparams->kernel_heap  = ki_get_kernel_end_virtual();
 	kparams->kernel_memory_bitmap = (uint32_t*) KERNEL_PHYSICAL_TO_VIRTUAL(kmemlow_get_bitmap_ptr());
+	kparams->bitmap_size = kmemlow_get_bitmap_size();
 
 	ki_printf("kparams struct:\n");
 	ki_printf("kernel_stack - 0x%x\n", (unsigned int) kparams->kernel_stack);
 	ki_printf("kernel_heap - 0x%x\n", (unsigned int) kparams->kernel_heap);
 	ki_printf("kernel_memory_bitmap - 0x%x\n", (unsigned int) kparams->kernel_memory_bitmap);
+	ki_printf("kernel bitmap size: 0x%x\n", kparams->bitmap_size);
 }

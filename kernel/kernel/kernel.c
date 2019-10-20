@@ -1,6 +1,8 @@
 #include <init/kparams.h>
 #include <kernel/display.h>
+
 #include <stdio.h>
+#include <stddef.h>
 
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
