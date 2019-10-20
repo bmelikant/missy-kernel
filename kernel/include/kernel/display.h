@@ -15,7 +15,7 @@ typedef uint8_t display_color_t;
 #define COLOR_FG_GRAY			0x7
 #define COLOR_FG_DARKGRAY		0x8
 #define COLOR_FG_LIGHTBLUE		0x9
-#define COLOR_FG_LIGHTGREE		0xA
+#define COLOR_FG_LIGHTGREEN		0xA
 #define COLOR_FG_LIGHTCYAN		0xB
 #define COLOR_FG_LIGHTRED		0xC
 #define COLOR_FG_LIGHTPURPLE	0xD

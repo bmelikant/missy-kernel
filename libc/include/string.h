@@ -1,8 +1,13 @@
 #ifndef _LIBC_STRING_H
 #define _LIBC_STRING_H
 
+#include <sys/cdefs.h>
 #include <stdint.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** memory functions */
 void 	*memcpy(void *destination, const void *source, size_t length);		// movecopy.c, done
@@ -28,5 +33,9 @@ size_t	strspn(const char *str1, const char *str2);							// search.c
 char	*strstr(const char *str1, const char *str2);						// search.c
 char	*strtok(char *str, const char *delimiters);							// other.c
 size_t	strlen(const char *str);											// other.c
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _LIBC_STRING_H

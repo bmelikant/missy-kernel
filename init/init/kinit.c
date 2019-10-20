@@ -1,4 +1,4 @@
-#include <version.h>
+#include <kernel/version.h>
 
 #include <init/kterm.h>
 #include <init/kutils.h>

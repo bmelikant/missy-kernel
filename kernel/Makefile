@@ -14,7 +14,7 @@ BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -I../init/include -DDEBUG_KMEMLOW 
+CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -I../init/include
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
@@ -35,6 +35,8 @@ KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_INIT_OBJS) \
 	kernel/kernel.o \
+	kernel/panic.o \
+	kernel/itoa.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \
@@ -55,7 +57,7 @@ $(ARCHDIR)/crtn.o \
 .PHONY: all clean install install-headers install-kernel
 .SUFFIXES: .o .c .S .asm
 
-all: missy.kernel ; $(info $$var is [${var}])echo hello
+all: missy.kernel
 
 missy.kernel: $(OBJS) $(ARCHDIR)/link.ld
 	$(CC) -T $(ARCHDIR)/link.ld -o $@ $(CFLAGS) $(LINK_LIST)
