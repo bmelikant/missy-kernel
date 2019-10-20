@@ -1,7 +1,7 @@
-#include <multiboot/multiboot.h>
-#include <kterm.h>
-#include <kutils.h>
-#include <kerrno.h>
+#include <init/multiboot/multiboot.h>
+#include <init/kterm.h>
+#include <init/kutils.h>
+#include <init/kerrno.h>
 
 
 #define MBOOT2_TYPETAG_END		0x00

@@ -34,7 +34,11 @@ LIBK_CFLAGS:=$(LIBK_CFLAGS) $(KERNEL_ARCH_CFLAGS)
 LIBK_CPPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 
 FREEOBJS=\
-	$(ARCH_FREEOBJS)
+	$(ARCH_FREEOBJS) \
+	string/movecopy.o \
+	string/compare.o \
+	stdio/putchar.o \
+	stdio/puts.o \
 
 HOSTEDOBJS=\
 	$(ARCH_HOSTEDOBJS)

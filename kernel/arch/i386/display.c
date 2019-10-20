@@ -13,18 +13,17 @@
 #define VIDEO_ROWS 			25
 #define COLOR_ATTRIBUTE 	0x0F
 
-#define BLINKY_CURSOR 		0x875F
-#define CLEAR_SCREEN_WORD	0x0720
+#define BLINKY_CURSOR 		0x5F
+#define CLEAR_SCREEN_CHAR	0x20
 
 #define TAB_CHAR_COUNT		4
 
 static unsigned short x_loc = 0;
 static unsigned short y_loc = 0;
-static uint8_t color_attrib = 0x07;
+static display_color_t color_attrib = 0x07;
 
 /** internal functions */
 static void disable_hardware_cursor();
-static void clear_display();
 static void update_blinky_cursor();
 static void scroll_display();
 static void increment_draw_location();
@@ -37,7 +36,7 @@ static void tabulate(uint16_t *);
 void display_init() {
 	// just going to disable the hardware cursor and implement our own
 	disable_hardware_cursor();
-	clear_display();
+	display_clear();
 	enable_blinking_text();
 }
 
@@ -48,7 +47,7 @@ void display_write(unsigned int c) {
 	} else if (c == '\t') {
 		tabulate(write_loc);
 	} else if (c == '\n') {
-		*write_loc=CLEAR_SCREEN_WORD;		// clear out the blinky cursor
+		*write_loc=(uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;		// clear out the blinky cursor
 		x_loc=0;
 		y_loc++;
 		update_blinky_cursor();
@@ -58,8 +57,14 @@ void display_write(unsigned int c) {
 	}
 }
 
+display_color_t display_change_color(display_color_t new_color) {
+	display_color_t old_color = color_attrib;
+	color_attrib = new_color;
+	return old_color;
+}
+
 void backspace(uint16_t *write_loc) {
-	*(--write_loc) = CLEAR_SCREEN_WORD;
+	*(--write_loc) = (uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;
 	if (x_loc == 0) {
 		if (y_loc > 0) {
 			y_loc--;
@@ -72,7 +77,7 @@ void backspace(uint16_t *write_loc) {
 
 void tabulate(uint16_t *write_loc) {
 	for (size_t i = 0; i < TAB_CHAR_COUNT; i++) {
-		*write_loc++ = CLEAR_SCREEN_WORD;
+		*write_loc++ = (uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;
 		increment_draw_location();
 	}
 }
@@ -101,13 +106,13 @@ void update_blinky_cursor() {
 	// we are just going to leave the current x and y values intact
 	// so the next write clears the cursor away
 	uint16_t *cursor_loc = get_write_location();
-	*cursor_loc = BLINKY_CURSOR;
+	*cursor_loc = (uint16_t)(color_attrib<<8)|BLINKY_CURSOR;
 }
 
-void clear_display() {
+void display_clear() {
 	uint16_t *vmem = (uint16_t *) VIDEO_MEMORY_START;
 	for (size_t i = 0; i < VIDEO_COLUMNS*VIDEO_ROWS; i++) {
-		*(vmem+i) = CLEAR_SCREEN_WORD;
+		*(vmem+i) = (uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;
 	}
 	x_loc = y_loc = 0;
 	update_blinky_cursor();

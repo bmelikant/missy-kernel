@@ -1,8 +1,8 @@
-#include <memory/kmemlow.h>
-#include <memory/paging.h>
-#include <kutils.h>
-#include <kerrno.h>
-#include <kterm.h>
+#include <init/memory/kmemlow.h>
+#include <init/memory/paging.h>
+#include <init/kutils.h>
+#include <init/kerrno.h>
+#include <init/kterm.h>
 
 #define PTABLE_FLAG_PRESENT 		0x0001
 #define PTABLE_FLAG_RW				0x0002
