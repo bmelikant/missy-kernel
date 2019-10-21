@@ -10,7 +10,6 @@
 #include <stdlib.h>
 
 char number_buffer[ITOA_BUFFER_SIZE];
-extern void __attribute__((cdecl))(*default_interrupt_vector)();
 
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
@@ -22,8 +21,6 @@ void kernel_main(_kernel_params_t *kparams) {
 
 	puts("Initializing kernel...");
 	printf("Kernel %s, version %s\n", kernel_name, kernel_version);
-
-	//default_interrupt_vector();
 
 	cpu_driver_init();
 }
