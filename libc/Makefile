@@ -21,7 +21,7 @@ INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
 
 CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -Ikernel -DDEBUG_KMEMLOW 
+CPPFLAGS:=$(CPPFLAGS) -D__is_libc -DDEBUG_BUILD -D__build_i386 -Iinclude
 LIBK_CFLAGS:=$(CFLAGS)
 LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk
 
@@ -37,8 +37,12 @@ FREEOBJS=\
 	$(ARCH_FREEOBJS) \
 	string/movecopy.o \
 	string/compare.o \
+	string/other.o \
 	stdio/putchar.o \
 	stdio/puts.o \
+	stdio/printf.o \
+	stdio/vprintf.o \
+	stdlib/abort.o \
 
 HOSTEDOBJS=\
 	$(ARCH_HOSTEDOBJS)

@@ -42,6 +42,7 @@ align 4
 
 [extern kernel_early_init]
 [extern _page_directory]
+[extern _init]
 [global early_panic]
 [global kstart]
 [global kinit_errno]
@@ -107,6 +108,8 @@ next:
 [extern kernel_main]
 _paging_start:
 
+	call _init				; initialize the C runtime
+
 	; fix the stack... ugh
 	mov esp,dword [kernel_stack]
 	mov ebp,esp
@@ -117,8 +120,8 @@ _paging_start:
 	jmp $
 
 [section .kernel_errno]
-[global errno]
-errno dd 0x00
+[global _kerrno]
+_kerrno dd 0x00
 
 [section .kernelend]
 [global _mbitmap]

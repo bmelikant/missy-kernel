@@ -106,7 +106,7 @@ void update_blinky_cursor() {
 	// we are just going to leave the current x and y values intact
 	// so the next write clears the cursor away
 	uint16_t *cursor_loc = get_write_location();
-	*cursor_loc = (uint16_t)(color_attrib<<8)|BLINKY_CURSOR;
+	*cursor_loc = (uint16_t)((color_attrib | 0x80) <<8) | BLINKY_CURSOR;
 }
 
 void display_clear() {
