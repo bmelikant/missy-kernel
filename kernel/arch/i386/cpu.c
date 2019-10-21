@@ -1,5 +1,6 @@
 #include <kernel/cpu.h>
 #include <kernel/pic.h>
+#include <kernel/timer.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -126,9 +127,7 @@ int cpu_driver_init() {
 
 	// TODO: add APIC detection routine here and use 8259a PIC as fallback
 	pic_8259a_initialize(DEVICE_INTERRUPT_BASE,DEVICE_INTERRUPT_BASE+8);
-
-	// TODO: remove this disable code once the timer driver is in place
-	pic_8259a_disable();
+	pit_8254_initialize();
 
 	start_interrupts();
 	return 0;
@@ -138,7 +137,7 @@ int cpu_driver_init() {
  * Tell the CPU to listen for interrupt requests from the given IRQ
  * Execute the handler at fn_address when the IRQ is raised
  */
-void install_device_handler(uint32_t irq, void *fn_address) {
+void cpu_install_device(uint32_t irq, void *fn_address) {
 	uint32_t interrupt_idx = irq + DEVICE_INTERRUPT_BASE;
 	uint32_t address = (uint32_t) fn_address;
 	install_handler(interrupt_idx,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,address);
