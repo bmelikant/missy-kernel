@@ -127,8 +127,6 @@ int cpu_driver_init() {
 
 	// TODO: add APIC detection routine here and use 8259a PIC as fallback
 	pic_8259a_initialize(DEVICE_INTERRUPT_BASE,DEVICE_INTERRUPT_BASE+8);
-	pit_8254_initialize();
-
 	start_interrupts();
 	return 0;
 }
@@ -140,7 +138,12 @@ int cpu_driver_init() {
 void cpu_install_device(uint32_t irq, void *fn_address) {
 	uint32_t interrupt_idx = irq + DEVICE_INTERRUPT_BASE;
 	uint32_t address = (uint32_t) fn_address;
+	
+	// need to pause interrupts while making IDT changes
+	stop_interrupts();
 	install_handler(interrupt_idx,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,address);
+	start_interrupts();
+	
 	if (!using_apic) {
 		pic_8259a_unmask_irq((uint8_t) irq);
 	} else {

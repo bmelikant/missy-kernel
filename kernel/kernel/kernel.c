@@ -24,6 +24,8 @@ void kernel_main(_kernel_params_t *kparams) {
 	printf("Kernel %s, version %s\n", kernel_name, kernel_version);
 
 	cpu_driver_init();
+	pit_8254_initialize();
+	
 	unsigned int old_timer_value = pit_8254_get_ticks();
 
 	while (1) {
