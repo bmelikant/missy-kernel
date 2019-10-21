@@ -21,7 +21,4 @@ void kernel_main(_kernel_params_t *kparams) {
 
 	char *test_string = "Hello, world!";
 	printf("string: %s\n",test_string);
-
-	unsigned int testnumber = 1024;
-	printf("test hex integer: 0x%x\n", testnumber);
 }

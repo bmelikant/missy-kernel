@@ -84,25 +84,64 @@ int vprintf(const char* restrict fmt, va_list arguments) {
 			if (!print(str, length)) {
 				return -1;
 			}
-			written += length;
-		} else if (*fmt == 'x') {
+			written += length; 
+		} else if (*fmt == 'x' || *fmt == 'X' || *fmt == 'o' || *fmt == 'u') {
+			int base = 10;
+			
+			if (*fmt == 'x' || *fmt == 'X') base = 16;
+			else if (*fmt == 'o') base = 8;
+
 			fmt++;
-			unsigned int hexnum = va_arg(arguments, unsigned int);
+			unsigned int num = va_arg(arguments, unsigned int);
 			#if defined(__is_libk)
-			char hexbuffer[ITOA_BUFFER_SIZE];
-			size_t length = itoa(hexbuffer,hexnum,16);
+			char buffer[ITOA_BUFFER_SIZE];
+			size_t length = itoa(buffer,num,base);
 			if (maxrem < length) {
 				errno = EOVERFLOW;
 				return -1;
 			}
-			if (!print(hexbuffer,length)) {
+			if (!print(buffer,length)) {
 				return -1;
 			}
 			written += length;
 			#else
 			// TODO: add userspace snprintf logic here
 			#endif
-		} else {
+		} else if (*fmt == 'd' || *fmt == 'i') {
+			fmt++;
+			int num = va_arg(arguments, int);
+			#if defined(__is_libk)
+			char buffer[ITOA_BUFFER_SIZE];
+			size_t length = itoa(buffer,num,10);
+			if (maxrem < length) {
+				errno = EOVERFLOW;
+				return -1;
+			}
+			if (!print(buffer,length)) {
+				return -1;
+			}
+			written += length;
+			#else
+			// TODO: add userspace snprintf logic here
+			#endif
+		} 
+		#if defined(__is_libk)		// print binary formats for the kernel
+		else if (*fmt == 'b') {
+			fmt++;
+			unsigned int num = va_arg(arguments, unsigned int);
+			char buffer[ITOA_BUFFER_SIZE];
+			size_t length = itoa(buffer,num,2);
+			if (maxrem < length) {
+				errno = EOVERFLOW;
+				return -1;
+			}
+			if (!print(buffer,length)) {
+				return -1;
+			}
+			written += length;
+		}
+		#endif
+		else {
 			fmt = fmt_begun_at;
 			size_t length = strlen(fmt);
 			if (maxrem < length) {
