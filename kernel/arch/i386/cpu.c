@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <cpuid.h>
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -24,6 +25,13 @@
 
 #define INTERRUPT32_TYPE	(INTERRUPT_TYPE_PRESENT|INTERRUPT_TYPE_SYSTEM|INTERRUPT_TYPE_GATE32)
 #define SYSTEM_CODE_SELECTOR	0x08
+
+#define CPUID_BASIC 	0x0
+#define CPUID_FEATURES	0x00000001
+#define CPUID_EXTENDED 	0x80000000
+
+#define CPUID_FEATURE_FPU_PRESENT	(1<<0)
+#define CPUID_FEATURE_APIC_PRESENT 	(1<<9)
 
 typedef void(*isr_handler)();
 
@@ -84,6 +92,7 @@ static inline void load_idtr() {
 /** internal function declarations */
 static int install_handler(uint32_t index, uint8_t flags, uint16_t selector, uint32_t routine);
 static void install_cpu_exceptions();
+static bool has_feature(uint32_t feature);
 
 /**
  * Initialize the CPU. For now, I trust the GDT I set up in bootstub.asm
@@ -104,12 +113,23 @@ int cpu_driver_init() {
 
 	install_cpu_exceptions();
 	load_idtr();
+
+	// check for local APIC, even though we don't support it yet
+	if (has_feature(CPUID_FEATURE_APIC_PRESENT)) {
+		puts("Processor local APIC was found");
+	}
+
+	// check for FPU (just for fun TODO: remove)
+	if (has_feature(CPUID_FEATURE_FPU_PRESENT)) {
+		puts("Processor has x87 FPU present");
+	}
+
 	// TODO: add APIC detection routine here and use 8259a PIC as fallback
 	pic_8259a_initialize(DEVICE_INTERRUPT_BASE,DEVICE_INTERRUPT_BASE+8);
 
 	// TODO: remove this disable code once the timer driver is in place
 	pic_8259a_disable();
-	
+
 	start_interrupts();
 	return 0;
 }
@@ -170,4 +190,18 @@ static void install_cpu_exceptions() {
 	install_handler(19,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_simdexception);
 	install_handler(20,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_virtualizeexception);
 	install_handler(30,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_securityexception);
+}
+
+/**
+ * Check EDX for specific CPUID feature
+ */
+static bool has_feature(uint32_t feature) {
+	if (__get_cpuid_max(CPUID_BASIC,NULL) > 0) {
+		unsigned int reg_eax, reg_ebx, reg_ecx, reg_edx;
+		__get_cpuid(CPUID_FEATURES, &reg_eax, &reg_ebx, &reg_ecx, &reg_edx);
+		if (reg_edx & feature) {
+			return true;
+		}
+	}
+	return false;
 }
