@@ -29,6 +29,7 @@ int acpi_init(_acpi_sdt_header_t *rsdt) {
 	}
 
 }
+
 void *acpi_find_header(const char *header_name) {
 
 }
