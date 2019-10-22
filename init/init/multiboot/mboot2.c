@@ -11,7 +11,8 @@
 #define MBOOT2_TYPETAG_CMDLINE	0x01
 #define MBOOT2_TYPETAG_MODULES	0x03
 #define MBOOT2_TYPETAG_ELFSYM	0x09
-
+#define MBOOT2_TYPETAG_ACPI_1	0x0E
+#define MBOOT2_TYPETAG_ACPI_2	0x0F
 
 typedef struct MULTIBOOT2_TAG 			multiboot2_tag;
 typedef struct MULTIBOOT2_TAG_MEMSZ 	multiboot2_tag_memsz;
@@ -59,6 +60,22 @@ typedef struct MULTIBOOT2_TAG_CHECK {
 	unsigned int tag;
 	unsigned int errno;
 } multiboot2_tagcheck_t;
+
+typedef struct ACPI1_RSDP {
+	char signature[8];
+	uint8_t checksum;
+	char oem_id[6];
+	uint8_t revision;
+	uint32_t rsdt_addr;
+}__attribute__((packed)) _acpi_rsdp_t;
+
+typedef struct ACPI2_RSDP {
+	_acpi_rsdp_t rdst_original;
+	uint32_t length;
+	uint64_t xsdt_addr;
+	uint8_t checksum_extended;
+	uint8_t reserved[3];
+}__attribute__((packed)) _acpi2_rsdp_t;
 
 static multiboot2_tagcheck_t multiboot2_required[] = {
 	{ MBOOT2_TYPETAG_MEMSZ, MBOOT_ERROR_INVALID_MEMSIZE },
@@ -256,6 +273,11 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 	return (size_t) total_size;
 }
 
+int mboot2_get_acpi_rsdt(void *rsdtptr) {
+	uint32_t *destination = (uint32_t *) rsdtptr;
+	
+}
+
 void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	#ifdef DEBUG_MULTIBOOT
 	ki_printf("installing API functions...\n");
@@ -263,4 +285,5 @@ void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	api_struct->get_memory_size = mboot2_get_memory_size;
 	api_struct->get_next_mmap_entry = mboot2_get_next_mmap;
 	api_struct->relocate_multiboot = mboot2_relocate_tags;
+	api_struct->get_rsdt_ptr = mboot2_get_acpi_rsdt;
 }

@@ -63,6 +63,7 @@ typedef struct MULTIBOOT_API {
 	multiboot_fn get_memory_size;
 	multiboot_fn get_next_mmap_entry;
 	multiboot_fn relocate_multiboot;
+	multiboot_fn get_rsdt_ptr;
 } multiboot_api_t;
 
 typedef struct MEMORY_MAP_DATA {
@@ -77,6 +78,7 @@ int				multiboot_init				(void *multiboot_ptr, unsigned int header_magic);
 void			multiboot_relocate			(void *_kernel_end);
 unsigned int 	multiboot_get_memsz 		();
 int				multiboot_get_mmap_next 	(mmap_data *data);
+void			*multiboot_get_rsdt_ptr		();
 
 #ifdef _cplusplus
 }
