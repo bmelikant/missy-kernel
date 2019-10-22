@@ -11,6 +11,9 @@
 #include <init/kterm.h>
 #include <init/kutils.h>
 
+#include <stddef.h>
+#include <stdint.h>
+
 // internal data
 unsigned int boot_magic = 0;
 unsigned int mb_memory_sz = 0;
@@ -106,6 +109,29 @@ int multiboot_get_mmap_next(mmap_data *buf) {
 }
 
 /**
+ * void *multiboot_get_rsdt_ptr(): Return the pointer to the rsdt structure
+ * If this pointer is valid, it is guaranteed to live in mapped memory following
+ * jump to paging mode (the RSDT should always live in the EBDA below 1MB)
+ */
+void *multiboot_get_rsdt_ptr() {
+	uint32_t rsdt_ptr = 0;
+
+	if (api_struct.get_rsdt_ptr(&rsdt_ptr) != -1) {
+		if (rsdt_ptr) {
+			#ifdef DEBUG_MULTIBOOT
+			kernel_early_puts("Found rsdt_ptr in multiboot info");
+			#endif
+			return (void*)(rsdt_ptr);
+		} 
+	}
+
+	#ifdef DEBUG_MULTIBOOT
+	kernel_early_puts("Could not find rsdt_ptr in multiboot info");
+	#endif
+	return (void *)(NULL);
+}
+
+/**
  * void multiboot_relocate(): relocate the multiboot structure to a new position above the kernel
  * This is done to avoid overwriting the multiboot structure with any physical memory allocation data
  * This issue is only known to affect grub2 bootloader at this point, original grub just skips this code
@@ -125,4 +151,5 @@ void init_api_struct() {
 	api_struct.get_memory_size = multiboot_unimplemented;
 	api_struct.get_next_mmap_entry = multiboot_unimplemented;
 	api_struct.relocate_multiboot = multiboot_unimplemented;
+	api_struct.get_rsdt_ptr = multiboot_unimplemented;
 }

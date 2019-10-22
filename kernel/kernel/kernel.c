@@ -25,14 +25,4 @@ void kernel_main(_kernel_params_t *kparams) {
 
 	cpu_driver_init();
 	pit_8254_initialize();
-	
-	unsigned int old_timer_value = pit_8254_get_ticks();
-
-	while (1) {
-		unsigned int new_timer_value = pit_8254_get_ticks();
-		if (new_timer_value != old_timer_value) {
-			printf("tick: %u\n", new_timer_value);
-			old_timer_value = new_timer_value;
-		}
-	}
 }
