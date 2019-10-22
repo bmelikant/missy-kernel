@@ -3,6 +3,7 @@
 #include <init/kutils.h>
 #include <init/kerrno.h>
 
+#include <limits.h>
 
 #define MBOOT2_TYPETAG_END		0x00
 #define MBOOT2_TYPETAG_MEMSZ	0x04
@@ -76,6 +77,16 @@ typedef struct ACPI2_RSDP {
 	uint8_t checksum_extended;
 	uint8_t reserved[3];
 }__attribute__((packed)) _acpi2_rsdp_t;
+
+typedef struct MULTIBOOT2_TAG_ACPI1 {
+	struct MULTIBOOT2_TAG tag;
+	_acpi_rsdp_t acpi_tag;
+}__attribute__((packed)) multiboot2_tag_acpi;
+
+typedef struct MULTIBOOT2_TAG_ACPI2 {
+	struct MULTIBOOT2_TAG tag;
+	_acpi2_rsdp_t acpi_tag;
+}__attribute__((packed)) multiboot2_tag_acpi2;
 
 static multiboot2_tagcheck_t multiboot2_required[] = {
 	{ MBOOT2_TYPETAG_MEMSZ, MBOOT_ERROR_INVALID_MEMSIZE },
@@ -275,7 +286,35 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 
 int mboot2_get_acpi_rsdt(void *rsdtptr) {
 	uint32_t *destination = (uint32_t *) rsdtptr;
-	
+	multiboot2_tag *tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_1);
+	uint64_t rsdt_addr = 0;
+
+	if (!tag) {
+		tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_2);
+		if (!tag) {
+			#ifdef DEBUG_MULTIBOOT
+			kernel_early_puts("Could not find ACPI tag");
+			#endif
+			*destination = 0;
+			return -1;
+		}
+		multiboot2_tag_acpi2 *acpi2_tag = (multiboot2_tag_acpi2 *)(tag);
+		rsdt_addr = acpi2_tag->acpi_tag.xsdt_addr;
+	} else {
+		multiboot2_tag_acpi *acpi_tag = (multiboot2_tag_acpi *)(tag);
+		rsdt_addr = acpi_tag->acpi_tag.rsdt_addr;
+	}
+
+	if (rsdt_addr > UINT32_MAX) {
+		#ifdef DEBUG_MULTIBOOT
+		kernel_early_puts("ACPI RSDT address is outside range of uint32_t");
+		#endif
+		kinit_errno = ERANGE;
+		return -1;
+	}
+
+	*destination = (uint32_t) rsdt_addr;
+	return 0;
 }
 
 void multiboot2_install_api_fns(multiboot_api_t *api_struct) {

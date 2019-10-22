@@ -21,7 +21,14 @@ void kernel_main(_kernel_params_t *kparams) {
 	const char *kernel_version = KERNEL_VERSION_STRING;
 
 	puts("Initializing kernel...");
-	printf("Kernel %s, version %s\n", kernel_name, kernel_version);
+	printf("Kernel %s, version %s\n\n", kernel_name, kernel_version);
+	
+	printf("Kernel parameters:\n");
+	printf("kparams->kernel_stack = 0x%x\n", (uint32_t)(kparams->kernel_stack));
+	printf("kparams->kernel_heap = 0x%x\n", (uint32_t)(kparams->kernel_heap));
+	printf("kparams->kernel_memory_bitmap = 0x%x\n", (uint32_t)(kparams->kernel_memory_bitmap));
+	printf("kparams->bitmap_size = %d\n", kparams->bitmap_size);
+	printf("kparams->rsdt_address = 0x%x\n\n",(uint32_t)(kparams->rsdt_address));
 
 	cpu_driver_init();
 	pit_8254_initialize();
