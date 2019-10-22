@@ -54,9 +54,25 @@ int brk(void *addr) {
 
 	// fresh allocation 
 	if (!_brk) {
-		unsigned int block_count = (__page_aligned_top-__heap_base_addr)/PAGEMNGR_PAGE_SIZE;
-		// grab / map blocks until block_count is satisifed
-		
+		int block_count = (__page_aligned_top-__heap_base_addr)/PAGEMNGR_PAGE_SIZE;
+		void *frame_addr = __heap_base_addr;
+
+		// allocate and map blocks until block_count is satisifed
+		for (int i = 0; i < block_count; i++) {
+			void *block = balloc_allocate_block();
+			if (!block) {
+				while (i >= 0) {
+					void *physical = pagemngr_unmap_block(frame_addr);
+					balloc_deallocate_block(physical);
+					frame_addr -= PAGEMNGR_PAGE_SIZE;
+				}
+				errno = ENOMEM;
+				return -1;
+			}
+
+			pagemngr_map_block(block,frame_addr);
+			frame_addr += PAGEMNGR_PAGE_SIZE;
+		}
 	} else {
 	}
 }
