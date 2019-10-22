@@ -128,6 +128,14 @@ uint32_t kmemlow_get_bitmap_size() {
 	return bitmap_size;
 }
 
+uint32_t kmemlow_get_total_blocks() {
+	return total_blocks;
+}
+
+uint32_t kmemlow_get_used_blocks() {
+	return used_blocks;
+}
+
 void *kmemlow_alloc() {
 	uint32_t free_block = first_free();
 	#ifdef DEBUG_KMEMLOW

@@ -13,8 +13,8 @@ void *kmemlow_get_kernel_endptr();	// get a pointer to the first 4kb aligned blo
 void *kmemlow_get_bitmap_ptr();		// return the physical pointer to the memory bitmap
 uint32_t kmemlow_get_bitmap_size();	// get the size of the memory bitmap so the kernel can set itself up later
 
-unsigned int kmemlow_get_total_blocks();
-unsigned int kmemlow_get_free_blocks();
-unsigned int kmemlow_get_used_blocks();
+uint32_t kmemlow_get_total_blocks();
+uint32_t kmemlow_get_free_blocks();
+uint32_t kmemlow_get_used_blocks();
 
 #endif

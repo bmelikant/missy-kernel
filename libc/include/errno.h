@@ -11,6 +11,8 @@ extern int _kerrno;
 #define errno _kerrno
 #else
 // TODO: Provide definition for thread local, modifiable lvalue for libc
+extern int __errno;
+#define errno __errno
 #endif
 
 #endif // _LIBC_ERRNO_H
