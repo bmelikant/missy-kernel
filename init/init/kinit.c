@@ -8,6 +8,9 @@
 #include <init/kerrno.h>
 #include <init/kparams.h>
 
+#include <stddef.h>
+#include <stdint.h>
+
 void early_welcome_message() {
     ki_printf("missy kernel %s\n", KERNEL_VERSION_STRING);
 #ifdef DEBUG_BUILD
@@ -26,10 +29,26 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic, _kernel_params_t *kp
         early_panic();
     }
 
+	// preserve the rsdt address
+	void *rsdt_ptr =  multiboot_get_rsdt_ptr();
+	if (!rsdt_ptr) {
+		ki_printf("[PANIC]: Couuld not retrieve the RSDT pointer from multiboot data\n");
+		early_panic();
+	}
+
+	uint32_t rsdt_address = (uint32_t) rsdt_ptr;
+	if (rsdt_address >= 0x100000) {
+		ki_printf("[WARNING]: The RSDT pointer does not fall within the first 1MB region\n");
+		ki_printf("Address of RSDT: 0x%x\n", rsdt_address);
+		//early_panic();
+	}
+
 	// we should initialize the block allocator now, then set up for paging
 	// the asm block will install the paging handler once this function returns
     kmemlow_init_allocator();
 	ki_setup_paging();
+
+	ki_memset(kparams,0,sizeof(_kernel_params_t));
 
 	kparams->kernel_stack = ki_get_kernel_stack_top();
 	kparams->kernel_heap  = ki_get_kernel_end_virtual();

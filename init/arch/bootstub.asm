@@ -65,6 +65,7 @@ _kernel_params:
 	memory_bitmap 	dd 0
 	total_blocks	dd 0
 	used_blocks		dd 0
+	rsdt_address	dd 0
 
 early_panic:
 
