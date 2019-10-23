@@ -41,5 +41,5 @@ void kernel_main(_kernel_params_t *kparams) {
 	memory_setbase(kparams->kernel_heap);
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 
-	brk((void *)(kparams->kernel_heap)+0xfff);
+	brk((void *)(kparams->kernel_heap)+0x1fff);
 }

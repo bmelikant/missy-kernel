@@ -55,7 +55,7 @@ int brk(void *addr) {
 	// fresh allocation 
 	if (!_brk) {
 		int block_count = (__page_aligned_top-__heap_base_addr)/PAGEMNGR_PAGE_SIZE;
-		void *frame_addr = __heap_base_addr;
+		void *frame_addr = (void *) __heap_base_addr;
 
 		// allocate and map blocks until block_count is satisifed
 		for (int i = 0; i < block_count; i++) {
