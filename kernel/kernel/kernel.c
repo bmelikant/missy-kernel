@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <sys/unistd.h>
 
 char number_buffer[ITOA_BUFFER_SIZE];
 
