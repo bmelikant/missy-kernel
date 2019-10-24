@@ -73,7 +73,7 @@ $(ARCHDIR)/crtbegin.o $(ARCHDIR)/crtend.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 %.o: %.asm
-	$(NASM) $< -o $@ -felf
+	$(NASM) $< -o $@ -felf -Iinclude/
 
 clean:
 	rm -f missy.kernel
