@@ -55,6 +55,7 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic, _kernel_params_t *kp
 	kparams->kernel_memory_bitmap = (uint32_t*) KERNEL_PHYSICAL_TO_VIRTUAL(kmemlow_get_bitmap_ptr());
 	kparams->allocator_total_blocks = kmemlow_get_total_blocks();
 	kparams->allocator_used_blocks = kmemlow_get_used_blocks();
+	kparams->rsdt_address = rsdt_address;
 
 	ki_printf("kparams struct:\n");
 	ki_printf("kernel_stack - 0x%x\n", (unsigned int) kparams->kernel_stack);

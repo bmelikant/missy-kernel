@@ -33,6 +33,9 @@ void kernel_main(_kernel_params_t *kparams) {
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 	brk((void *)(kparams->kernel_heap));
 
+
+	printf("kparams->rsdt_address = 0x%x\n\n",(uint32_t)(kparams->rsdt_address));
+	
 	char *test = (char *) malloc(200);
 	char *test2 = (char *) malloc(200);
 
