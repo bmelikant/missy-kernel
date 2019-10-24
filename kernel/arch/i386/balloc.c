@@ -9,9 +9,15 @@
 #include <stdint.h>
 #include <errno.h>
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #define BALLOC_PAGE_SIZE 4096
 #define BLOCKS_PER_UNIT	 32
 #define FULL_UNIT		 0xffffffff
+
+#define block_is_allocated(x)	(_mbmp[x/BLOCKS_PER_UNIT])&(1<<(x%BLOCKS_PER_UNIT))
 
 uint32_t *_mbmp = NULL;
 static unsigned int _total_blocks = 0;
@@ -65,9 +71,11 @@ void *balloc_allocate_block() {
 void balloc_deallocate_block(void *block) {
 	uint32_t allocated_block = (uint32_t)(block) / BALLOC_PAGE_SIZE;
 
-	// make sure the block isn't outside the block map
-	if (allocated_block < _total_blocks) {
-		deallocate(allocated_block);
+	if (block_is_allocated(allocated_block)) {
+		// make sure the block isn't outside the block map
+		if (allocated_block < _total_blocks) {
+			deallocate(allocated_block);
+		}
 	}
 }
 
