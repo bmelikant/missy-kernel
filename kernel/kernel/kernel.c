@@ -10,9 +10,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/unistd.h>
-
-char number_buffer[ITOA_BUFFER_SIZE];
 
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
@@ -28,19 +27,19 @@ void kernel_main(_kernel_params_t *kparams) {
 	cpu_driver_init();
 	pit_8254_initialize();
 
-	// display the kernel paramters. this should make it easier for me
-	// to figure out how to write my initial brk()
-	printf("Kernel Parameters struct:\n");
-	printf("kparams->kernel_stack = 0x%x\n", (unsigned int) kparams->kernel_stack);
-	printf("kparams->kernel_heap = 0x%x\n", (unsigned int) kparams->kernel_heap);
-	printf("kparams->memory_bitmap = 0x%x\n", (unsigned int) kparams->kernel_memory_bitmap);
-	printf("kparams->allocator_total_blocks = %u\n", kparams->allocator_total_blocks);
-	printf("kparams->allocator_used_blocks = %u\n", kparams->allocator_used_blocks);
-
-	// allocate the first page beyond the end of the kernel to start the kernel heap
+	// allocate the first page beyond the end of the kernel to start the kernel heap. set the kernel break
+	// to the first page beyond the kernel
 	memory_setbase(kparams->kernel_heap);
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
+	brk((void *)(kparams->kernel_heap));
 
-	brk((void *)(kparams->kernel_heap)+0x1fff);
-	brk((void *)(kparams->kernel_heap)+0x3fff);
+	char *test = (char *) malloc(200);
+	char *test2 = (char *) malloc(200);
+
+	char *testline = "Hello, world!\n";
+	printf("test -> 0x%x\n", (unsigned int) test);
+	printf("test2 -> 0x%x\n", (unsigned int) test2);
+	memset(test,0,200);
+	strncpy(test,testline,strlen(testline));
+	printf("testline -> %s\n",test);
 }
