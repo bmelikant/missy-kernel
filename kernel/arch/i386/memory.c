@@ -43,6 +43,9 @@ int brk(void *addr) {
 	uintptr_t __heap_base_addr = (uintptr_t)(_heap_base);
 	uintptr_t __new_brk_addr = (uintptr_t)(addr);
 
+	printf("heap base address: 0x%x\n", __heap_base_addr);
+	printf("new brk addr: 0x%x\n", __new_brk_addr);
+
 	if (__new_brk_addr < __heap_base_addr) {
 		errno = ENOMEM;
 		return -1;
@@ -50,6 +53,7 @@ int brk(void *addr) {
 
 	// page-align the new brk addr to the next page up
 	uintptr_t __page_aligned_top = PAGEMNGR_PAGE_ALIGN_UP(__new_brk_addr);
+	printf("page-aligned new top: 0x%x\n", __page_aligned_top);
 
 	// fresh allocation 
 	if (!_brk) {
@@ -64,12 +68,15 @@ int brk(void *addr) {
 
 	} else {
 		uintptr_t __old_brk_addr = (uintptr_t) _brk;
+		printf("old brk: 0x%x\n", __old_brk_addr);
 
 		// new break is inside the last mapped page
 		if (PAGEMNGR_PAGE_ALIGN_DOWN(__new_brk_addr) == PAGEMNGR_PAGE_ALIGN_DOWN(__old_brk_addr)) {
 			_brk = addr;
 		} else {
-			size_t new_block_count = __page_aligned_top-PAGEMNGR_PAGE_ALIGN_DOWN(__old_brk_addr);
+			size_t new_block_count = (__page_aligned_top-PAGEMNGR_PAGE_ALIGN_DOWN(__old_brk_addr)) / PAGEMNGR_PAGE_SIZE;
+			printf("page align old brk down: 0x%x\n",PAGEMNGR_PAGE_ALIGN_DOWN(__old_brk_addr));
+
 			void *frame_addr = (void *) PAGEMNGR_PAGE_ALIGN_UP(__old_brk_addr);
 			printf("new blocks to allocate: %u\n", new_block_count);
 			printf("allocate to 0x%x\n", (uint32_t) frame_addr);
