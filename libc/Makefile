@@ -43,6 +43,7 @@ FREEOBJS=\
 	stdio/printf.o \
 	stdio/vprintf.o \
 	stdlib/abort.o \
+	stdlib/malloc.o \
 
 HOSTEDOBJS=\
 	$(ARCH_HOSTEDOBJS)

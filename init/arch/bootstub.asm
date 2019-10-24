@@ -63,7 +63,8 @@ _kernel_params:
 	kernel_stack 	dd 0
 	kernel_heap		dd 0
 	memory_bitmap 	dd 0
-	bitmap_size		dd 0
+	total_blocks	dd 0
+	used_blocks		dd 0
 
 early_panic:
 

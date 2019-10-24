@@ -115,18 +115,11 @@ int cpu_driver_init() {
 	install_cpu_exceptions();
 	load_idtr();
 
-	// check for local APIC, even though we don't support it yet
-	if (has_feature(CPUID_FEATURE_APIC_PRESENT)) {
-		puts("Processor local APIC was found");
-	}
-
-	// check for FPU (just for fun TODO: remove)
-	if (has_feature(CPUID_FEATURE_FPU_PRESENT)) {
-		puts("Processor has x87 FPU present");
-	}
-
 	// TODO: add APIC detection routine here and use 8259a PIC as fallback
+	// going to disable the PICs for now so we aren't firing odd interrupts
 	pic_8259a_initialize(DEVICE_INTERRUPT_BASE,DEVICE_INTERRUPT_BASE+8);
+	pic_8259a_disable();
+
 	start_interrupts();
 	return 0;
 }
