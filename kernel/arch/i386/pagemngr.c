@@ -62,7 +62,7 @@ int pagemngr_map_block(void *physical, void *virtual) {
 	}
 
 	// compute the virtual address of the destination page
-	uint32_t *page_table_virtual = (uint32_t *)(PAGE_TABLE_VIRTUAL_BASE + (pdir_entry((uint32_t) virtual)*PAGEMNGR_PAGE_SIZE));
+	uint32_t *page_table_virtual = (uint32_t *)(PAGE_TABLE_VIRTUAL_BASE + (pdir_entry((uint32_t) virtual)*PAGE_SIZE));
 	if (page_table_virtual[ptable_entry((uint32_t) virtual)] != 0) {
 		// something is already mapped here...
 		return -1;
@@ -78,20 +78,20 @@ void *pagemngr_unmap_block(void *virtual) {
 
 	if (_page_directory_virtual[pdir_entry((uint32_t) virtual)] & PTABLE_FLAG_PRESENT) {
 		// compute the entry in the page table
-		uint32_t *page_table_virtual = (uint32_t *)(PAGE_TABLE_VIRTUAL_BASE + (pdir_entry((uint32_t) virtual)*PAGEMNGR_PAGE_SIZE));
+		uint32_t *page_table_virtual = (uint32_t *)(PAGE_TABLE_VIRTUAL_BASE + (pdir_entry((uint32_t) virtual)*PAGE_SIZE));
 		if (page_table_virtual[ptable_entry((uint32_t) virtual)] & PTABLE_FLAG_PRESENT) {
 			physical_address = (void *)((page_table_virtual[ptable_entry((uint32_t) virtual)])&0xfff); 
 			page_table_virtual[ptable_entry((uint32_t) virtual)] = 0;
 			
 			// if this page directory entry is completely empty, unmap it
 			int i = 0;
-			for (; i < (int)(PAGEMNGR_PAGE_SIZE / sizeof(uint32_t)); i++) {
+			for (; i < (int)(PAGE_SIZE / sizeof(uint32_t)); i++) {
 				if (page_table_virtual[i] > 0) {
 					break;
 				}
 			}
 
-			if (i >= (int)(PAGEMNGR_PAGE_SIZE / sizeof(uint32_t))) {
+			if (i >= (int)(PAGE_SIZE / sizeof(uint32_t))) {
 				balloc_deallocate_block((void *)(_page_directory_virtual[pdir_entry((uint32_t) virtual)]));
 				_page_directory_virtual[pdir_entry((uint32_t) virtual)] = 0;
 			}
