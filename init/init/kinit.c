@@ -36,12 +36,13 @@ void kernel_early_init(void *mboot_hdr, unsigned int magic, _kernel_params_t *kp
 		early_panic();
 	}
 
-	uint32_t rsdt_address = (uint32_t) rsdt_ptr;
-	if (rsdt_address >= 0x100000) {
-		ki_printf("[WARNING]: The RSDT pointer does not fall within the first 1MB region\n");
-		ki_printf("Address of RSDT: 0x%x\n", rsdt_address);
-		//early_panic();
+	_acpi2_rsdp_t rsdp;
+	if (multiboot_get_rsdp(&rsdp) == -1) {
+		ki_printf("[WARNING]: Could not find ACPI information\n");
+		early_panic();
 	}
+
+	
 
 	// we should initialize the block allocator now, then set up for paging
 	// the asm block will install the paging handler once this function returns

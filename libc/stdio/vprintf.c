@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <limits.h>
 #include <errno.h>
+#include <string.h>
 
 #if defined(__is_libk)
 #include <kernel/itoa.h>

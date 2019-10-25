@@ -9,23 +9,17 @@
 #include <stddef.h>
 #include <errno.h>
 
+#if defined(__build_i386)
+#define PAGE_SIZE		4096
+#else
+#define PAGE_SIZE		1
+#endif
+
+#define ALIGN_DOWN(x)	(x &~ (PAGE_SIZE-1))
+#define ALIGN_UP(x)		(ALIGN_DOWN(x)+PAGE_SIZE)
+
 static void *_brk = NULL;
 static void *_base = NULL;
-
-int brk(void *addr) {
-	// if not allocated, allocate a single page starting at the given address to start the heap
-	if (!_base) {
-		_base = addr;
-		if (memory_get_blocks(addr,1) == -1) {
-			errno = ENOMEM;
-			return -1;
-		}
-		_brk = addr;
-	} else {
-		uintptr_t old_brk = _brk;
-		
-	}
-}
 
 /**
  * Set the new program break (end of heap space for this program)
@@ -33,14 +27,21 @@ int brk(void *addr) {
  * base data segment
  */
 int brk(void *addr) {
-	if (!_heap_base) {
-		errno = EINVAL;
-		return -1;
+
+	// first brk allocates a single page at the requested break address
+	if (!_base) {
+		_base = addr;
+		if (memory_get_blocks(addr,1) == -1) {
+			errno = ENOMEM;
+			return -1;
+		}
+		_brk = addr;
+		return 0;
 	}
 
 	// make sure we aren't trying to set the break to some
 	// undefined region of memory before the heap start
-	uintptr_t __heap_base_addr = (uintptr_t)(_heap_base);
+	uintptr_t __heap_base_addr = (uintptr_t)(_base);
 	uintptr_t __new_brk_addr = (uintptr_t)(addr);
 
 	if (__new_brk_addr < __heap_base_addr) {
@@ -53,11 +54,11 @@ int brk(void *addr) {
 
 	// fresh allocation 
 	if (!_brk) {
-		size_t block_count = (__page_aligned_top-__heap_base_addr)/BLOCK_ALIGN;
+		size_t block_count = (__page_aligned_top-__heap_base_addr) / PAGE_SIZE;
 		void *frame_addr = (void *) __heap_base_addr;
 
 		// allocate and map blocks until block_count is satisifed
-		if (allocate_new_brk(frame_addr, block_count) == -1) return -1;
+		if (memory_get_blocks(frame_addr, block_count) == -1) return -1;
 		_brk = addr;
 
 	} else {
@@ -67,10 +68,10 @@ int brk(void *addr) {
 		if (ALIGN_DOWN(__new_brk_addr) == ALIGN_DOWN(__old_brk_addr)) {
 			_brk = addr;
 		} else {
-			size_t new_block_count = ((__page_aligned_top-ALIGN_DOWN(__old_brk_addr)) / BLOCK_ALIGN) - 1;
+			size_t new_block_count = ((__page_aligned_top-ALIGN_DOWN(__old_brk_addr)) / PAGE_SIZE) - 1;
 			void *frame_addr = (void *) ALIGN_UP(__old_brk_addr);
 
-			if (allocate_new_brk(frame_addr,new_block_count) == -1) return -1;
+			if (memory_get_blocks(frame_addr,new_block_count) == -1) return -1;
 			_brk = addr;
 		}
 	}

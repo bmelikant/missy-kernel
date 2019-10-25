@@ -6,6 +6,7 @@
 #include <kernel/itoa.h>
 #include <kernel/timer.h>
 #include <kernel/memory.h>
+#include <kernel/acpi.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -29,20 +30,12 @@ void kernel_main(_kernel_params_t *kparams) {
 
 	// allocate the first page beyond the end of the kernel to start the kernel heap. set the kernel break
 	// to the first page beyond the kernel
-	memory_setbase(kparams->kernel_heap);
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 	brk((void *)(kparams->kernel_heap));
 
-
+	printf("kparams->kernel_stack = 0x%x\n", (uint32_t)(kparams->kernel_stack));
+	printf("kparams->kernel_heap = 0x%x\n", (uint32_t)(kparams->kernel_heap));
 	printf("kparams->rsdt_address = 0x%x\n\n",(uint32_t)(kparams->rsdt_address));
-	
-	char *test = (char *) malloc(200);
-	char *test2 = (char *) malloc(200);
 
-	char *testline = "Hello, world!\n";
-	printf("test -> 0x%x\n", (unsigned int) test);
-	printf("test2 -> 0x%x\n", (unsigned int) test2);
-	memset(test,0,200);
-	strncpy(test,testline,strlen(testline));
-	printf("testline -> %s\n",test);
+	acpi_init((_acpi_sdt_header_t *) kparams->rsdt_address);
 }

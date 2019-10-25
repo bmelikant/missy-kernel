@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <errno.h>
 
 #include "pagemngr.h"
 #include "balloc.h"
@@ -50,13 +51,20 @@ int pagemngr_init() {
 }
 
 int pagemngr_map_block(void *physical, void *virtual) {
+	// align addresses down
+	physical = (void *) ALIGN_BLOCK_DOWN((uintptr_t)physical);
+	virtual = (void *) ALIGN_BLOCK_DOWN((uintptr_t) virtual);
+
 	uint32_t page_table_entry = (uint32_t)(physical) | PTABLE_FLAG_PRESENT;
 	uint32_t page_directory_entry = _page_directory_virtual[pdir_entry((uint32_t)virtual)];
 
 	// this page table is unmapped; map it
 	if (page_directory_entry == 0) {
 		void *new_page_table = balloc_allocate_block();
-		if (!new_page_table) return -1;
+		if (!new_page_table) {
+			errno = ENOMEM;
+			return -1;
+		}
 
 		_page_directory_virtual[pdir_entry((uint32_t) virtual)] = (uint32_t)(new_page_table) | PTABLE_FLAG_PRESENT;
 	}
@@ -65,6 +73,7 @@ int pagemngr_map_block(void *physical, void *virtual) {
 	uint32_t *page_table_virtual = (uint32_t *)(PAGE_TABLE_VIRTUAL_BASE + (pdir_entry((uint32_t) virtual)*PAGE_SIZE));
 	if (page_table_virtual[ptable_entry((uint32_t) virtual)] != 0) {
 		// something is already mapped here...
+		errno = EADDRINUSE;
 		return -1;
 	}
 
@@ -74,6 +83,7 @@ int pagemngr_map_block(void *physical, void *virtual) {
 }
 
 void *pagemngr_unmap_block(void *virtual) {
+	virtual = (void *) ALIGN_BLOCK_DOWN((uintptr_t) virtual);
 	void *physical_address = NULL;
 
 	if (_page_directory_virtual[pdir_entry((uint32_t) virtual)] & PTABLE_FLAG_PRESENT) {

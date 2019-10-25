@@ -109,26 +109,15 @@ int multiboot_get_mmap_next(mmap_data *buf) {
 }
 
 /**
- * void *multiboot_get_rsdt_ptr(): Return the pointer to the rsdt structure
- * If this pointer is valid, it is guaranteed to live in mapped memory following
- * jump to paging mode (the RSDT should always live in the EBDA below 1MB)
+ * int multiboot_get_rsdt_ptr(): Fill in the given acpi structure with data from the multiboot acpi rsdp copy
+ * rsdp_ptr should be a pointer to an appropriately sized block of memory (sizeof(acpi2_rsdp_t))
  */
-void *multiboot_get_rsdt_ptr() {
-	uint32_t rsdt_ptr = 0;
-
-	if (api_struct.get_rsdt_ptr(&rsdt_ptr) != -1) {
-		if (rsdt_ptr) {
-			#ifdef DEBUG_MULTIBOOT
-			kernel_early_puts("Found rsdt_ptr in multiboot info");
-			#endif
-			return (void*)(rsdt_ptr);
-		} 
-	}
+int multiboot_get_rsdp(void *rsdp_ptr) {
 
 	#ifdef DEBUG_MULTIBOOT
-	kernel_early_puts("Could not find rsdt_ptr in multiboot info");
+	kernel_early_puts("Getting rsdp pointer");
 	#endif
-	return (void *)(NULL);
+	return api_struct.get_rsdp(rsdp_ptr);
 }
 
 /**

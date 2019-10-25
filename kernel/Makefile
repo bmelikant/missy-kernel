@@ -37,6 +37,7 @@ $(KERNEL_INIT_OBJS) \
 	kernel/kernel.o \
 	kernel/panic.o \
 	kernel/itoa.o \
+	kernel/acpi.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

@@ -5,6 +5,7 @@
 #define ENOMEM		0x00000002
 #define ERANGE		0x00000003
 #define EOVERFLOW	0x00000004
+#define EADDRINUSE	0x00000005
 
 #if defined(__is_libk) || defined(__is_missy_kernel)
 extern int _kerrno;

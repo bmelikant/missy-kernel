@@ -22,7 +22,7 @@
 #define PAGE_SIZE 4096
 
 #define PAGE_DIRECTORY_MAPPING 	0xffc00000
-#define KERNEL_STACK_MAPPING	(PAGE_DIRECTORY_MAPPING-(PAGE_SIZE*2))
+#define KERNEL_STACK_MAPPING	(PAGE_DIRECTORY_MAPPING-(PAGE_SIZE*9))		// leave 8 pages at the top of the space free for temp mappings
 
 uint32_t *_page_directory = NULL;
 

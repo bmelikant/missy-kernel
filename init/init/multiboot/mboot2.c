@@ -62,22 +62,6 @@ typedef struct MULTIBOOT2_TAG_CHECK {
 	unsigned int errno;
 } multiboot2_tagcheck_t;
 
-typedef struct ACPI1_RSDP {
-	char signature[8];
-	uint8_t checksum;
-	char oem_id[6];
-	uint8_t revision;
-	uint32_t rsdt_addr;
-}__attribute__((packed)) _acpi_rsdp_t;
-
-typedef struct ACPI2_RSDP {
-	_acpi_rsdp_t rdst_original;
-	uint32_t length;
-	uint64_t xsdt_addr;
-	uint8_t checksum_extended;
-	uint8_t reserved[3];
-}__attribute__((packed)) _acpi2_rsdp_t;
-
 typedef struct MULTIBOOT2_TAG_ACPI1 {
 	struct MULTIBOOT2_TAG tag;
 	_acpi_rsdp_t acpi_tag;
@@ -284,10 +268,10 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 	return (size_t) total_size;
 }
 
-int mboot2_get_acpi_rsdt(void *rsdtptr) {
-	uint32_t *destination = (uint32_t *) rsdtptr;
+int mboot2_get_acpi_rsdp(void *rsdp2ptr) {
+	_acpi2_rsdp_t *destination = (_acpi2_rsdp_t *) rsdp2ptr;
 	multiboot2_tag *tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_1);
-	uint64_t rsdt_addr = 0;
+	ki_memset(destination,0,sizeof(_acpi2_rsdp_t));
 
 	if (!tag) {
 		tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_2);
@@ -295,25 +279,15 @@ int mboot2_get_acpi_rsdt(void *rsdtptr) {
 			#ifdef DEBUG_MULTIBOOT
 			kernel_early_puts("Could not find ACPI tag");
 			#endif
-			*destination = 0;
 			return -1;
 		}
 		multiboot2_tag_acpi2 *acpi2_tag = (multiboot2_tag_acpi2 *)(tag);
-		rsdt_addr = acpi2_tag->acpi_tag.xsdt_addr;
+		ki_memcpy(destination,&acpi2_tag->acpi_tag,sizeof(_acpi2_rsdp_t));
 	} else {
 		multiboot2_tag_acpi *acpi_tag = (multiboot2_tag_acpi *)(tag);
-		rsdt_addr = acpi_tag->acpi_tag.rsdt_addr;
+		ki_memcpy(destination,&acpi_tag->acpi_tag,sizeof(_acpi_rsdp_t));
 	}
 
-	if (rsdt_addr > UINT32_MAX) {
-		#ifdef DEBUG_MULTIBOOT
-		kernel_early_puts("ACPI RSDT address is outside range of uint32_t");
-		#endif
-		kinit_errno = ERANGE;
-		return -1;
-	}
-
-	*destination = (uint32_t) rsdt_addr;
 	return 0;
 }
 
@@ -324,5 +298,5 @@ void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	api_struct->get_memory_size = mboot2_get_memory_size;
 	api_struct->get_next_mmap_entry = mboot2_get_next_mmap;
 	api_struct->relocate_multiboot = mboot2_relocate_tags;
-	api_struct->get_rsdt_ptr = mboot2_get_acpi_rsdt;
+	api_struct->get_rsdp = mboot2_get_acpi_rsdp;
 }

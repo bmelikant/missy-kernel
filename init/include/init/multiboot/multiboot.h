@@ -63,7 +63,7 @@ typedef struct MULTIBOOT_API {
 	multiboot_fn get_memory_size;
 	multiboot_fn get_next_mmap_entry;
 	multiboot_fn relocate_multiboot;
-	multiboot_fn get_rsdt_ptr;
+	multiboot_fn get_rsdp;
 } multiboot_api_t;
 
 typedef struct MEMORY_MAP_DATA {
@@ -72,13 +72,29 @@ typedef struct MEMORY_MAP_DATA {
 	uint32_t type;
 } mmap_data;
 
+typedef struct ACPI1_RSDP {
+	char signature[8];
+	uint8_t checksum;
+	char oem_id[6];
+	uint8_t revision;
+	uint32_t rsdt_addr;
+}__attribute__((packed)) _acpi_rsdp_t;
+
+typedef struct ACPI2_RSDP {
+	_acpi_rsdp_t rdst_original;
+	uint32_t length;
+	uint64_t xsdt_addr;
+	uint8_t checksum_extended;
+	uint8_t reserved[3];
+}__attribute__((packed)) _acpi2_rsdp_t;
+
 
 /* Multiboot parsing functions */
 int				multiboot_init				(void *multiboot_ptr, unsigned int header_magic);
 void			multiboot_relocate			(void *_kernel_end);
 unsigned int 	multiboot_get_memsz 		();
 int				multiboot_get_mmap_next 	(mmap_data *data);
-void			*multiboot_get_rsdt_ptr		();
+int				multiboot_get_rsdp			(_acpi2_rsdp_t *dest);
 
 #ifdef _cplusplus
 }
