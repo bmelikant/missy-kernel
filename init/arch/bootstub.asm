@@ -58,6 +58,35 @@ gdt_table:
 	dw gdt_table-gdt_start-1
 	dd gdt_start
 
+;--------------------------
+; _kernel_params structs
+;--------------------------
+
+struc ACPI_RSDP
+	.signature		resb	8
+	.checksum		resb	1
+	.oem_id			resb	6
+	.revision		resb	1
+	.rsdt_addr		resd	1
+endstruc
+
+struc ACPI_2_RSDP
+	.rsdp_original	resb	ACPI_RSDP_size
+	.length			resd	1
+	.xsdt_addr		resq	1
+	.checksum_ext	resb	1
+	.reserved		resb	3
+endstruc
+
+struc KERNEL_PARAMETERS
+	.kernel_stack	resd 	1
+	.kernel_heap	resd	1
+	.memory_bitmap	resd	1
+	.total_blocks	resd	1
+	.used_blocks	resd	1
+	.rsdp			resb	ACPI_2_RSDP_size
+endstruc
+
 kinit_errno dd 0x0
 _kernel_params:
 	kernel_stack 	dd 0
