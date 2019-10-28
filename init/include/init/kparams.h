@@ -10,7 +10,6 @@ struct KERNEL_PARAMETERS {
 	uint32_t *kernel_memory_bitmap;
 	uint32_t allocator_total_blocks;
 	uint32_t allocator_used_blocks;
-	_acpi2_rsdp_t rsdp;
 };
 
 typedef struct KERNEL_PARAMETERS _kernel_params_t ;

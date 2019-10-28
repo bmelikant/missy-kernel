@@ -20,7 +20,7 @@ void *memset(void *destination, int initial, size_t count) {
  * get the length of a null-terminated c string
  */
 size_t strlen(const char *str) {
-	const char *s2 = str;
-	while (*s2++) ;
-	return (size_t)(s2-str)-1;
+	size_t i = 0;
+	for (; str[i] != '\0'; i++) ;
+	return i;
 }

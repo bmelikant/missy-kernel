@@ -62,16 +62,6 @@ typedef struct MULTIBOOT2_TAG_CHECK {
 	unsigned int errno;
 } multiboot2_tagcheck_t;
 
-typedef struct MULTIBOOT2_TAG_ACPI1 {
-	struct MULTIBOOT2_TAG tag;
-	_acpi_rsdp_t acpi_tag;
-}__attribute__((packed)) multiboot2_tag_acpi;
-
-typedef struct MULTIBOOT2_TAG_ACPI2 {
-	struct MULTIBOOT2_TAG tag;
-	_acpi2_rsdp_t acpi_tag;
-}__attribute__((packed)) multiboot2_tag_acpi2;
-
 static multiboot2_tagcheck_t multiboot2_required[] = {
 	{ MBOOT2_TYPETAG_MEMSZ, MBOOT_ERROR_INVALID_MEMSIZE },
 	{ MBOOT2_TYPETAG_MMAP, MBOOT_ERROR_INVALID_MEMORY_MAP }
@@ -268,29 +258,6 @@ multiboot2_entry_mmap *mboot2_next_mmap() {
 	return (size_t) total_size;
 }
 
-int mboot2_get_acpi_rsdp(void *rsdp2ptr) {
-	_acpi2_rsdp_t *destination = (_acpi2_rsdp_t *) rsdp2ptr;
-	multiboot2_tag *tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_1);
-	ki_memset(destination,0,sizeof(_acpi2_rsdp_t));
-
-	if (!tag) {
-		tag = mboot2_find_tag(MBOOT2_TYPETAG_ACPI_2);
-		if (!tag) {
-			#ifdef DEBUG_MULTIBOOT
-			kernel_early_puts("Could not find ACPI tag");
-			#endif
-			return -1;
-		}
-		multiboot2_tag_acpi2 *acpi2_tag = (multiboot2_tag_acpi2 *)(tag);
-		ki_memcpy(destination,&acpi2_tag->acpi_tag,sizeof(_acpi2_rsdp_t));
-	} else {
-		multiboot2_tag_acpi *acpi_tag = (multiboot2_tag_acpi *)(tag);
-		ki_memcpy(destination,&acpi_tag->acpi_tag,sizeof(_acpi_rsdp_t));
-	}
-
-	return 0;
-}
-
 void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	#ifdef DEBUG_MULTIBOOT
 	ki_printf("installing API functions...\n");
@@ -298,5 +265,4 @@ void multiboot2_install_api_fns(multiboot_api_t *api_struct) {
 	api_struct->get_memory_size = mboot2_get_memory_size;
 	api_struct->get_next_mmap_entry = mboot2_get_next_mmap;
 	api_struct->relocate_multiboot = mboot2_relocate_tags;
-	api_struct->get_rsdp = mboot2_get_acpi_rsdp;
 }

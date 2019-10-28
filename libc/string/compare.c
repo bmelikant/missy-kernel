@@ -40,11 +40,10 @@ int strcmp(const char *str1, const char *str2) {
  * used up, the string read will stop
  */
 int strncmp(const char *str1, const char *str2, size_t length) {
-	while (*str1 && *str2 && length > 0) {
-		if (*str1 != *str2) {
-			break;
+	while (length--) {
+		if (*str1++ != *str2++) {
+			return *(unsigned char *)(str1-1) - *(unsigned char *)(str2-1);
 		}
-		str1++;str2++;length--;
 	}
-	return (int)(*str1-*str2);
+	return 0;
 }

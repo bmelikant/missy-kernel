@@ -4,19 +4,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct ACPI_SDT_HEADER {
-	char signature[4];
-	uint32_t length;
-	uint8_t revision;
-	uint8_t checksum;
-	char oem_id[8];
-	char oem_table_id[8];
-	uint32_t oem_revision;
-	uint32_t creator_id;
-	uint32_t creator_revision;
-}__attribute__((packed)) _acpi_sdt_header_t;
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 
-int acpi_init(_acpi_sdt_header_t *acpi_header);
+
+
+#define ACPI_INIT_NOT_FOUND		-1
+#define ACPI_INIT_ACPI_FOUND	0x01
+#define ACPI_INIT_ACPI2_FOUND	0x02
+
+int acpi_init();
 void *acpi_find_header(const char *header);
+
+/** ACPICA API bridge functions */
+
 
 #endif // _KERNEL_ACPI_H

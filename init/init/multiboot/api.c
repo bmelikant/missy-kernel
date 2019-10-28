@@ -109,18 +109,6 @@ int multiboot_get_mmap_next(mmap_data *buf) {
 }
 
 /**
- * int multiboot_get_rsdt_ptr(): Fill in the given acpi structure with data from the multiboot acpi rsdp copy
- * rsdp_ptr should be a pointer to an appropriately sized block of memory (sizeof(acpi2_rsdp_t))
- */
-int multiboot_get_rsdp(void *rsdp_ptr) {
-
-	#ifdef DEBUG_MULTIBOOT
-	kernel_early_puts("Getting rsdp pointer");
-	#endif
-	return api_struct.get_rsdp(rsdp_ptr);
-}
-
-/**
  * void multiboot_relocate(): relocate the multiboot structure to a new position above the kernel
  * This is done to avoid overwriting the multiboot structure with any physical memory allocation data
  * This issue is only known to affect grub2 bootloader at this point, original grub just skips this code
@@ -140,5 +128,4 @@ void init_api_struct() {
 	api_struct.get_memory_size = multiboot_unimplemented;
 	api_struct.get_next_mmap_entry = multiboot_unimplemented;
 	api_struct.relocate_multiboot = multiboot_unimplemented;
-	api_struct.get_rsdt_ptr = multiboot_unimplemented;
 }

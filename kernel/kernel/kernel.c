@@ -34,8 +34,9 @@ void kernel_main(_kernel_params_t *kparams) {
 	brk((void *)(kparams->kernel_heap));
 
 	printf("kparams->kernel_stack = 0x%x\n", (uint32_t)(kparams->kernel_stack));
-	printf("kparams->kernel_heap = 0x%x\n", (uint32_t)(kparams->kernel_heap));
-	printf("kparams->rsdt_address = 0x%x\n\n",(uint32_t)(kparams->rsdt_address));
+	printf("kparams->kernel_heap = 0x%x\n\n", (uint32_t)(kparams->kernel_heap));
 
-	acpi_init((_acpi_sdt_header_t *) kparams->rsdt_address);
+	int result = acpi_init();
+	void *test = acpi_find_header("FACP");
+	printf("header is at address 0x%x\n", (uint32_t) test);
 }
