@@ -1,0 +1,9 @@
+#ifndef _KERNEL_DRIVER_I386_SERIAL_PORT_H
+#define _KERNEL_DRIVER_I386_SERIAL_PORT_H 1
+
+#define COM_PORT_1	0x3F8
+#define COM_PORT_2	0x2F8
+
+int serial_init(int port);
+
+#endif // _KERNEL_DRIVER_I386_SERIAL_PORT_H
