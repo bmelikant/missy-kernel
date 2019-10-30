@@ -46,10 +46,14 @@ void display_write(unsigned int c) {
 		backspace(write_loc);
 	} else if (c == '\t') {
 		tabulate(write_loc);
-	} else if (c == '\n') {
+	} else if (c == '\n' || c == '\r') {
 		*write_loc=(uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;		// clear out the blinky cursor
 		x_loc=0;
 		y_loc++;
+		
+		if (y_loc >= VIDEO_ROWS) {
+			scroll_display();
+		}
 		update_blinky_cursor();
 	} else {
 		*write_loc = (uint16_t)((color_attrib << 8) | (uint8_t)(c));
@@ -64,6 +68,8 @@ display_color_t display_change_color(display_color_t new_color) {
 }
 
 void backspace(uint16_t *write_loc) {
+	// clear the blinky cursor off
+	*write_loc = (uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;
 	*(--write_loc) = (uint16_t)(color_attrib<<8)|CLEAR_SCREEN_CHAR;
 	if (x_loc == 0) {
 		if (y_loc > 0) {
@@ -73,6 +79,7 @@ void backspace(uint16_t *write_loc) {
 	} else {
 		x_loc--;
 	}
+	update_blinky_cursor();
 }
 
 void tabulate(uint16_t *write_loc) {
@@ -133,6 +140,7 @@ void scroll_display() {
 	}
 
 	y_loc = VIDEO_ROWS-1;
+	x_loc = 0;
 }
 
 uint16_t *get_write_location() {
