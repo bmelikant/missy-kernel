@@ -1,98 +1,13 @@
-#include <kernel/serial.h>
+/**
+ * Hash map implementation to hold the serial monitor built-in commands
+ */
 
-#include <stdio.h>
+#include <kernel/serialmon/serialmon.h>
+
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct HASH_MAP _map_t;
-typedef int(*_callback_p)(int, char **);
-
-_map_t *new_map(size_t initial_bucket_count);
-void store_item(_map_t *map, const char *key, _callback_p value);
-_callback_p get_item(_map_t *map, const char *key) ;
-
-extern int register_commands(_map_t *map, int sd);
-
-void serial_write_string(int sd, char *str) {
-	write_device(sd, str, strlen(str));
-}
-
-int serial_read_command(int sd, char *buffer, int max_length) {
-	int c = 0;
-	int count = 0;
-	while ((c = read_device_char(sd)) != -1 && count < max_length) {
-		if (c == '\r') {
-			c = '\n';
-			write_device(sd, &c, 1);
-			break;
-		} else if (c == '\b') {
-			buffer[--count] = 0;
-			int bkspc = '\b', spc = ' ';
-			write_device(sd, &bkspc, 1);
-			write_device(sd, &spc, 1);
-			write_device(sd, &bkspc, 1);
-		} else {
-			buffer[count++] = c;
-			write_device(sd, &c, 1);
-		}
-	}
-	return count;
-}
-
-/**
- * This function will be removed following merge of this branch
- * This presents a simple terminal to the serial port
- */
-void serial_terminal(const char *prompt) {
-	int dd = serial_init(COM_PORT_1);
-	printf("COM port device descriptor: %d\n", dd);
-
-	// create the command hash map
-	_map_t *command_map = new_map(10);
-	register_commands(command_map, dd);
-
-	write_device(dd, banner(), strlen(banner()));
-	char *cmd_buffer = (char *) malloc(255);
-	memset(cmd_buffer,0,255);
-
-	for (;;) {
-		serial_write_string(dd, prompt);
-		int length = serial_read_command(dd, cmd_buffer, 255);
-		printf("%s\n", cmd_buffer);
-		_callback_p fn;
-
-		if (strncmp(cmd_buffer, "stop", strlen(cmd_buffer)) == 0) {
-			serial_write_string(dd, "STOP command was issued\n");
-			break;
-		} else if ((fn = get_item(command_map, cmd_buffer))) {
-			fn(0, "");
-		} else {
-			serial_write_string(dd, "Unknown command: ");
-			serial_write_string(dd, cmd_buffer);
-			serial_write_string(dd, "\n");
-		}
-
-		// clear out the command buffer
-		memset(cmd_buffer, 0, 255);
-	}
-}
-
-/** boot-time terminal command caching functions. uses hashmap to store commands */
-#ifdef DEBUG_BUILD
-#define WARN(...) 			\
-do {						\
-	printf("ERROR: "); 		\
-	printf(__VA_ARGS__); 	\
-} while (0)
-#define DEBUG(...)			\
-do {						\
-	printf("DEBUG: ");		\
-	printf(__VA_ARGS__);	\
-} while (0)
-#else
-#define WARN(...)
-#define DEBUG(...)
-#endif
+/** hash map routines */
 
 #define BUCKET_SIZE			10					// 10 items per bucket
 #define INITIAL_BUCKETS		10					// initially there will be 10 buckets
@@ -159,10 +74,10 @@ _map_t *new_map(size_t initial_bucket_count) {
  */
 void store_item(_map_t *map, const char *key, _callback_p value) {
 	unsigned long hashvalue = hashsum(key, map->bucket_count);
-	DEBUG("hash value of %s is %li\n", key, hashvalue);
+	DEBUG("hash value of %s is %d\n", key, hashvalue);
 	_item_bucket_t *item_bucket = map->buckets+hashvalue;
 	int retval = store_to_bucket(item_bucket, key, value);
-	DEBUG("%d\n", retval);
+	DEBUG("store to bucket result: %d\n", retval);
 }
 
 /**
@@ -170,9 +85,9 @@ void store_item(_map_t *map, const char *key, _callback_p value) {
  */
 _callback_p get_item(_map_t *map, const char *key) {
 	unsigned long hashvalue = hashsum(key, map->bucket_count);
-	DEBUG("hash value of %s is %li\n", key, hashvalue);
+	DEBUG("hash value of %s is %d\n", key, hashvalue);
 	_item_bucket_t *item_bucket = map->buckets+hashvalue;
-	DEBUG("there are %li items stored in this bucket\n", item_bucket->items_count);
+	DEBUG("there are %d items stored in this bucket\n", item_bucket->items_count);
 	_bucket_item_t *item = find_in_bucket(item_bucket, key);
 	if (!item) { DEBUG("item not found in bucket\n"); return NULL; }
 
@@ -206,7 +121,7 @@ int store_to_bucket(_item_bucket_t *bucket, const char *key, _callback_p value) 
 	bucket_item->value = value;
 
 	// store the item in the current bucket index
-	DEBUG("storing item in bucket at index %li\n", bucket->items_count);
+	DEBUG("storing item in bucket at index %d\n", bucket->items_count);
 	bucket->bucket_items[bucket->items_count++] = bucket_item;
 	return 0;
 }
@@ -232,6 +147,7 @@ int initialize_bucket(_item_bucket_t *bucket) {
 _bucket_item_t *find_in_bucket(_item_bucket_t *bucket, const char *key) {
 	for (size_t i = 0; i < bucket->items_count; i++) {
 		_bucket_item_t *current_item = bucket->bucket_items[i];
+		DEBUG("checking item %s\n", current_item->key);
 		if (strlen(current_item->key) != strlen(key)) continue;
 		if (strncmp(current_item->key, key, strlen(key)) == 0) return current_item;
 	}
@@ -250,11 +166,6 @@ unsigned long hashsum(const char *key, size_t elements) {
 		hash ^= (unsigned long)(*key++);
 	}
 
-	DEBUG("current hash sum: %li\n", hash);
+	DEBUG("current hash sum: %d\n", hash);
 	return (unsigned long)(hash % elements);
 }
-
-/**
- * This function will allow a built-in command to be registered with this terminal
- * 
- */

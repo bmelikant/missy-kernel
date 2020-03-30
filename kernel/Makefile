@@ -32,8 +32,9 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 NASM=nasm
 
 SERIAL_TERMINAL_OBJS=\
-	kernel/serialterm/serial_terminal.o \
-	kernel/serialterm/builtin_commands.o \
+	kernel/serialmon/serialmon.o \
+	kernel/serialmon/commands.o \
+	kernel/serialmon/map.o \
 
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \

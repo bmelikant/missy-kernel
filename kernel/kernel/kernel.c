@@ -8,7 +8,7 @@
 #include <kernel/memory.h>
 
 /** TODO: Remove early built-in serial console */
-#include <kernel/serialterm/serial_terminal.h>
+#include <kernel/serialmon/serialmon.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -32,7 +32,7 @@ void kernel_main(_kernel_params_t *kparams) {
 	brk((void *)(kparams->kernel_heap));
 
 	/** TODO: remove built-in serial terminal */
-	serial_terminal("serial@missy-micro:/$ ");
+	serial_monitor("serial@missy-micro:/$ ");
 
 	printf("Received EOF from input stream\n");
 }
