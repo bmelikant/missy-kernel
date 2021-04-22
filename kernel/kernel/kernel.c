@@ -6,7 +6,9 @@
 #include <kernel/itoa.h>
 #include <kernel/timer.h>
 #include <kernel/memory.h>
-#include <kernel/serial.h>
+
+/** TODO: Remove early built-in serial console */
+#include <kernel/serialmon/serialmon.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -29,13 +31,8 @@ void kernel_main(_kernel_params_t *kparams) {
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 	brk((void *)(kparams->kernel_heap));
 
-	int dd = serial_init(COM_PORT_1);
-	printf("com port device descriptor: %d\n", dd);
-
-	int c = 0;
-	while ((c = read_device_char(dd)) != -1) {
-		putchar(c);
-	}
+	/** TODO: remove built-in serial terminal */
+	serial_monitor("serial@missy-micro:/$ ");
 
 	printf("Received EOF from input stream\n");
 }

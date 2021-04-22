@@ -1,6 +1,7 @@
 #ifndef _LIBC_STDLIB_H
 #define _LIBC_STDLIB_H
 
+#include <stddef.h>
 #include <sys/cdefs.h>
 
 #ifdef __cplusplus

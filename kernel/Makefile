@@ -31,6 +31,11 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
 NASM=nasm
 
+SERIAL_TERMINAL_OBJS=\
+	kernel/serialmon/serialmon.o \
+	kernel/serialmon/commands.o \
+	kernel/serialmon/map.o \
+
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_INIT_OBJS) \
@@ -39,6 +44,7 @@ $(KERNEL_INIT_OBJS) \
 	kernel/itoa.o \
 	kernel/chrdev.o \
 	kernel/version.o \
+$(SERIAL_TERMINAL_OBJS) \
 
 OBJS=\
 $(ARCHDIR)/crti.o \
