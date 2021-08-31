@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
-
 struct PROCESS_STRUCT {
     unsigned int pid;           // id of running process
     _process_state_t pstate;    // what is this process doing right now?
