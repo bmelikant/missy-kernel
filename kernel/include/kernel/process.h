@@ -12,9 +12,15 @@ typedef enum PROCESS_STATE {
     EXITED       // this process has exited
 } _process_state_t;
 
-typedef struct PROCESS_STRUCT _process_t;
+typedef struct PROCESS_STRUCT {
+    unsigned int pid;           // id of running process
+    _process_state_t pstate;    // what is this process doing right now?
+    uint32_t flags;             // process flags
+    __ptr_t entry;              // process entry point
+} _process_t;
 
-_process_t *create_process(__ptr_t load_addr, __ptr_t entry, __ptr_t heap, __ptr_t brk);
+_process_t *create_process(__ptr_t entry);
+void start_process(_process_t *process);
 int  signal_process(_process_t *process);
 void destroy_process(_process_t *process);
 
