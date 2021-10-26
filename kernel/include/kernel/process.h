@@ -19,11 +19,14 @@ typedef struct PROCESS_STRUCT {
     __ptr_t entry;              // process entry point
 } _process_t;
 
-_process_t *create_process(__ptr_t entry);
-void start_process(_process_t *process);
-int  signal_process(_process_t *process);
-void destroy_process(_process_t *process);
+/**
+ * create a process from an in-memory function
+ */
+int create_process(__ptr_t load_address, size_t binary_size, size_t requested_heap_size);
 
-_process_t *get_process_by_id(unsigned int pid);
+void start_process(int pid);
+int  signal_process(int pid, int signal);
+void destroy_process(int pid);
+
 
 #endif
