@@ -42,6 +42,14 @@ SECTIONS {
         *(.common .common.*)
     }
 
+    testmethod_start = .;
+
+    .testmethod : AT(ADDR(.testmethod) - 0xC0000000) {
+        *(.testmethod .testmethod.*)
+    }
+
+    testmethod_end = .;
+
     kernel_end = .;
     kernel_end_phys = . - 0xC0000000;
 

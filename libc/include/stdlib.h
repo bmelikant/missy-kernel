@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define __ptr_t void *
+
 __attribute__((__noreturn__))
 void abort(void);					// stdlib/abort.c
 

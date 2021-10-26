@@ -7,12 +7,26 @@
 #include <kernel/timer.h>
 #include <kernel/memory.h>
 #include <kernel/serial.h>
+#include <kernel/process.h>
 
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+
 #include <sys/unistd.h>
+
+__attribute__((noinline,section(".testmethod"))) void test_method() {
+	printf("I am in a new process!\n");
+	return;
+}
+
+extern unsigned int testmethod_end;
+extern unsigned int testmethod_start;
+
+void *testmethod_start_ptr = &testmethod_start;
+void *testmethod_end_ptr = &testmethod_end;
 
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
@@ -28,6 +42,11 @@ void kernel_main(_kernel_params_t *kparams) {
 	memory_setbase(kparams->kernel_heap);
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 	brk((void *)(kparams->kernel_heap));
+
+	int pid = create_process((__ptr_t)(test_method), (testmethod_end_ptr - testmethod_start_ptr),4096);
+	printf("Successfully created process %d of %i bytes\n", pid, (testmethod_end_ptr - testmethod_start_ptr));
+
+	start_process(pid);
 
 	int dd = serial_init(COM_PORT_1);
 	printf("com port device descriptor: %d\n", dd);

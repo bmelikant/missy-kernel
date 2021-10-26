@@ -39,6 +39,7 @@ $(KERNEL_INIT_OBJS) \
 	kernel/itoa.o \
 	kernel/chrdev.o \
 	kernel/version.o \
+	kernel/process.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \
