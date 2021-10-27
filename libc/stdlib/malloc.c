@@ -117,7 +117,7 @@ void free(void *block) {
  */
 void *calloc(size_t count, size_t size) {
 	void *_memblock = malloc(count*size);
-	if ((_memblock = malloc(count*size)) != NULL) {
+	if (_memblock) {
 		memset(_memblock,0,count*size);
 	}
 	return _memblock;

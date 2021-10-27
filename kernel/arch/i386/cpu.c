@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <cpuid.h>
+#include <stddef.h>
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -15,6 +16,7 @@
 #error "Cannot build cpu.c driver for non-i386 systems"
 #endif
 
+#define GDT_MAX 6
 #define MAX_INTERRUPTS 256
 
 #define INTERRUPT_TYPE_PRESENT		0x80
@@ -36,6 +38,30 @@
 
 typedef void(*isr_handler)();
 
+typedef struct GLOBAL_DESCRIPTOR_TABLE {
+	uint16_t limit;
+	uint32_t base;
+} __attribute__((packed)) _gdt_t;
+
+// GDT entry struct taken from OSDev Wiki
+typedef struct GDT_ENTRY {
+	unsigned int limit_low 				: 16;
+	unsigned int base_low				: 24;
+	unsigned int accessed				: 1;
+	unsigned int read_write 			: 1;
+	unsigned int conform_expand_down	: 1;
+	unsigned int code					: 1;
+	unsigned int code_data_segment		: 1;
+	unsigned int DPL					: 2;
+	unsigned int present				: 1;
+	unsigned int limit_high				: 4;
+	unsigned int available				: 1;
+	unsigned int long_mode				: 1;
+	unsigned int big					: 1;
+	unsigned int gran					: 1;
+	unsigned int base_high				: 8;
+} __attribute__((packed)) _gdt_entry_t;
+
 typedef struct INTERRUPT_DESCRIPTOR_TABLE {
 	uint16_t limit;
 	uint32_t base;
@@ -49,9 +75,11 @@ typedef struct ISR_ENTRY {
 	uint16_t offset_high;
 } __attribute__((packed)) _isr_entry_t;
 
-_interrupt_descriptor_table_t idt_entry;
-_isr_entry_t interrupts[MAX_INTERRUPTS];
-bool using_apic = false;
+static _gdt_t global_descriptor_table;
+static _gdt_entry_t descriptors[GDT_MAX];
+static _interrupt_descriptor_table_t idt_entry;
+static _isr_entry_t interrupts[MAX_INTERRUPTS];
+static bool using_apic = false;
 
 /** default interrupt handler. set for all interrupts until initialization is complete */
 extern void __attribute__((cdecl))i386_defaulthandler();
@@ -86,11 +114,18 @@ static inline void start_interrupts() {
 	asm volatile("sti");
 }
 
+static inline void load_gdtr() {
+	asm volatile("lgdt (%0);" :: "m"(global_descriptor_table));
+}
+
 static inline void load_idtr() {
 	asm volatile("lidt (%0);" :: "m"(idt_entry));
 }
 
 /** internal function declarations */
+static void add_ring0_gdt_entries();
+static void add_ring3_gdt_entries();
+
 static int install_handler(uint32_t index, uint8_t flags, uint16_t selector, uint32_t routine);
 static void install_cpu_exceptions();
 static bool has_feature(uint32_t feature);
@@ -103,6 +138,16 @@ int cpu_driver_init() {
 	// interrupts are already off, but just in case...
 	stop_interrupts();
 
+	// set up a new global descriptor table (null out the descriptors)
+	memset(&descriptors[0],0,sizeof(_gdt_entry_t)*GDT_MAX);
+	add_ring0_gdt_entries();
+	add_ring3_gdt_entries();
+
+	global_descriptor_table.base = (uint32_t) &descriptors[0];
+	global_descriptor_table.limit = (sizeof(_gdt_entry_t)*GDT_MAX)-1;
+
+	load_gdtr();
+	
 	// zero out the interrupt vector table
 	memset(&interrupts[0],0,sizeof(_isr_entry_t)*MAX_INTERRUPTS);
 	for (uint32_t i = 0; i < MAX_INTERRUPTS; i++) {
@@ -150,7 +195,8 @@ void cpu_install_device(uint32_t irq, void *fn_address) {
  * install the given interrupt handler at the given index in the IDT
  */
 static int install_handler(uint32_t index, uint8_t flags, uint16_t selector, uint32_t routine) {
-	if (index > MAX_INTERRUPTS) return -1;
+
+	if (index >= MAX_INTERRUPTS) return -1;
 
 	interrupts[index].offset_low = (uint16_t)(routine & 0xffff);
 	interrupts[index].offset_high = (uint16_t)(routine >> 16);
@@ -199,4 +245,52 @@ static bool has_feature(uint32_t feature) {
 		}
 	}
 	return false;
+}
+
+static void add_ring0_gdt_entries() {
+	_gdt_entry_t *ring0_code = &descriptors[1];
+	_gdt_entry_t *ring0_data = &descriptors[2];
+
+	ring0_code->limit_low 			= 0xffff;
+	ring0_code->base_low  			= 0;
+	ring0_code->accessed  			= 0;
+	ring0_code->read_write 			= 1;
+	ring0_code->conform_expand_down	= 0;
+	ring0_code->code				= 1;
+	ring0_code->code_data_segment 	= 1;
+	ring0_code->DPL					= 0;
+	ring0_code->present				= 1;
+	ring0_code->limit_high			= 0xf;
+	ring0_code->available			= 1;
+	ring0_code->long_mode			= 0;
+	ring0_code->big 				= 1;
+	ring0_code->gran				= 1;
+	ring0_code->base_high			= 0;
+
+	*ring0_data = *ring0_code;
+	ring0_data->code = 0;
+}
+
+static void add_ring3_gdt_entries() {
+	_gdt_entry_t *ring3_code = &descriptors[3];
+	_gdt_entry_t *ring3_data = &descriptors[4];
+
+	ring3_code->limit_low 			= 0xffff;
+	ring3_code->base_low  			= 0;
+	ring3_code->accessed  			= 0;
+	ring3_code->read_write 			= 1;
+	ring3_code->conform_expand_down = 0;
+	ring3_code->code				= 1;
+	ring3_code->code_data_segment 	= 1;
+	ring3_code->DPL					= 3;
+	ring3_code->present				= 1;
+	ring3_code->limit_high			= 0xf;
+	ring3_code->available			= 1;
+	ring3_code->long_mode			= 0;
+	ring3_code->big 				= 1;
+	ring3_code->gran				= 1;
+	ring3_code->base_high			= 0;
+
+	*ring3_data = *ring3_code;
+	ring3_data->code = 0;
 }

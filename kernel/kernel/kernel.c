@@ -28,6 +28,16 @@ extern unsigned int testmethod_start;
 void *testmethod_start_ptr = &testmethod_start;
 void *testmethod_end_ptr = &testmethod_end;
 
+int timer_test_method(void) {
+	printf("Hello, timer world!\n");
+	return 0;
+}
+
+int userspace_method() {
+	printf("I am in userspace!\n");
+	return 0;
+}
+
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
 	display_change_color(display_make_color(COLOR_FG_WHITE,COLOR_BG_GREEN));
@@ -47,7 +57,7 @@ void kernel_main(_kernel_params_t *kparams) {
 	printf("Successfully created process %d of %i bytes\n", pid, (testmethod_end_ptr - testmethod_start_ptr));
 
 	start_process(pid);
-
+	
 	int dd = serial_init(COM_PORT_1);
 	printf("com port device descriptor: %d\n", dd);
 
@@ -57,4 +67,7 @@ void kernel_main(_kernel_params_t *kparams) {
 	}
 
 	printf("Received EOF from input stream\n");
+
+	// attempt to jump into user mode since the system is "dead" anyway
+	enter_usermode(userspace_method);
 }

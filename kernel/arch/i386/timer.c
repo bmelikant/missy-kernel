@@ -6,6 +6,9 @@
 #include <kernel/cpu.h>
 #include <kernel/ports.h>
 
+#include <stdlib.h>
+#include <string.h>
+
 #define PIT_CHANNEL0_DATA_PORT 	0x40
 #define PIT_CHANNEL1_DATA_PORT 	0x41
 #define PIT_CHANNEL2_DATA_PORT 	0x42
@@ -40,6 +43,11 @@
 unsigned int pit_tick_count = 0;
 extern void __attribute__((cdecl)) timer_irq(void);
 
+#define TIMER_MAX_CALLBACKS 10
+
+static timer_callback_t callbacks[TIMER_MAX_CALLBACKS];
+static int callback_idx = 0;
+
 // void pit_8254_initialize (): Initialize the programmable interval timer
 // 8253-compatible chipset
 void pit_8254_initialize(void) {
@@ -61,6 +69,21 @@ void pit_8254_start(unsigned int freq) {
 	outportb (PIT_CHANNEL0_DATA_PORT, (unsigned char)(reload_value >> 8));
 }
 
+int timer_register_callback(timer_callback_t callback) {
+	if (callback_idx < TIMER_MAX_CALLBACKS - 1) {
+		callbacks[callback_idx++] = callback;
+		return 0;
+	}
+
+	return -1;
+}
+
 unsigned int pit_8254_get_ticks(void) {
 	return pit_tick_count;
+}
+
+void pit_8254_process_callbacks(void) {
+	for (int i = 0; i < callback_idx; i++) {
+		callbacks[i]();
+	}
 }

@@ -1,4 +1,5 @@
 #include <kernel/process.h>
+#include <kernel/timer.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -73,6 +74,6 @@ int start_process(int pid) {
     void (*fn)(void);
     fn = (void (*)(void)) current_proc->_entry_pt;
     fn();
-    
+
     return 0;
 }

@@ -9,12 +9,13 @@
 [section .text]
 
 [extern pit_tick_count]
+[extern pit_8254_process_callbacks]
 [global timer_irq]
 timer_irq:
 
 	pushad
 
-	inc dword [pit_tick_count]
+	call pit_8254_process_callbacks
 
 	; send EOI command
 	mov al,0x20
