@@ -10,4 +10,4 @@ if [[ "$serialout" != "" ]]; then
 	serialtty="com1: enabled=1,mode=term,dev=$serialout"
 fi
 
-bochs 'boot:cdrom' 'ata1-master: type=cdrom,path=missy.iso,status=inserted' "memory: guest=128,host=128" "$serialtty"
+bochs 'boot:cdrom' 'ata1-master: type=cdrom,path=missy.iso,status=inserted' "memory: guest=128,host=128" "$serialtty" "cpu: reset_on_triple_fault=0"

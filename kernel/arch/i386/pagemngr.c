@@ -50,7 +50,7 @@ int pagemngr_init() {
 }
 
 int pagemngr_map_block(void *physical, void *virtual) {
-	uint32_t page_table_entry = (uint32_t)(physical) | PTABLE_FLAG_PRESENT;
+	uint32_t page_table_entry = (uint32_t)(physical) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
 	uint32_t page_directory_entry = _page_directory_virtual[pdir_entry((uint32_t)virtual)];
 
 	// this page table is unmapped; map it
@@ -58,7 +58,7 @@ int pagemngr_map_block(void *physical, void *virtual) {
 		void *new_page_table = balloc_allocate_block();
 		if (!new_page_table) return -1;
 
-		_page_directory_virtual[pdir_entry((uint32_t) virtual)] = (uint32_t)(new_page_table) | PTABLE_FLAG_PRESENT;
+		_page_directory_virtual[pdir_entry((uint32_t) virtual)] = (uint32_t)(new_page_table) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
 	}
 
 	// compute the virtual address of the destination page

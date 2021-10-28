@@ -75,11 +75,46 @@ typedef struct ISR_ENTRY {
 	uint16_t offset_high;
 } __attribute__((packed)) _isr_entry_t;
 
+// struct taken from OSDev Wiki
+typedef struct TSS_ENTRY {
+	uint32_t prev_tss; // The previous TSS - with hardware task switching these form a kind of backward linked list.
+	uint32_t esp0;     // The stack pointer to load when changing to kernel mode.
+	uint32_t ss0;      // The stack segment to load when changing to kernel mode.
+	// Everything below here is unused.
+	uint32_t esp1; // esp and ss 1 and 2 would be used when switching to rings 1 or 2.
+	uint32_t ss1;
+	uint32_t esp2;
+	uint32_t ss2;
+	uint32_t cr3;
+	uint32_t eip;
+	uint32_t eflags;
+	uint32_t eax;
+	uint32_t ecx;
+	uint32_t edx;
+	uint32_t ebx;
+	uint32_t esp;
+	uint32_t ebp;
+	uint32_t esi;
+	uint32_t edi;
+	uint32_t es;
+	uint32_t cs;
+	uint32_t ss;
+	uint32_t ds;
+	uint32_t fs;
+	uint32_t gs;
+	uint32_t ldt;
+	uint16_t trap;
+	uint16_t iomap_base;
+} __attribute__((packed)) _tss_entry_t;
+
 static _gdt_t global_descriptor_table;
 static _gdt_entry_t descriptors[GDT_MAX];
 static _interrupt_descriptor_table_t idt_entry;
 static _isr_entry_t interrupts[MAX_INTERRUPTS];
 static bool using_apic = false;
+
+// this TSS will be used to get back to kernel land from user mode
+_tss_entry_t kernel_tss;
 
 /** default interrupt handler. set for all interrupts until initialization is complete */
 extern void __attribute__((cdecl))i386_defaulthandler();
@@ -122,6 +157,8 @@ static inline void load_idtr() {
 	asm volatile("lidt (%0);" :: "m"(idt_entry));
 }
 
+extern void flush_tss(void);
+
 /** internal function declarations */
 static void add_ring0_gdt_entries();
 static void add_ring3_gdt_entries();
@@ -142,11 +179,13 @@ int cpu_driver_init() {
 	memset(&descriptors[0],0,sizeof(_gdt_entry_t)*GDT_MAX);
 	add_ring0_gdt_entries();
 	add_ring3_gdt_entries();
+	add_tss_gdt_entry();
 
 	global_descriptor_table.base = (uint32_t) &descriptors[0];
 	global_descriptor_table.limit = (sizeof(_gdt_entry_t)*GDT_MAX)-1;
 
 	load_gdtr();
+	flush_tss();		// this has to happen *after* gdt setup. derp.
 	
 	// zero out the interrupt vector table
 	memset(&interrupts[0],0,sizeof(_isr_entry_t)*MAX_INTERRUPTS);
@@ -183,7 +222,7 @@ void cpu_install_device(uint32_t irq, void *fn_address) {
 	start_interrupts();
 	
 	if (!using_apic) {
-		pic_8259a_unmask_irq((uint8_t) irq);
+		//pic_8259a_unmask_irq((uint8_t) irq);
 	} else {
 		// TODO: add APIC routine here
 	}
@@ -255,13 +294,13 @@ static void add_ring0_gdt_entries() {
 	ring0_code->base_low  			= 0;
 	ring0_code->accessed  			= 0;
 	ring0_code->read_write 			= 1;
-	ring0_code->conform_expand_down	= 0;
+	ring0_code->conform_expand_down	= 1;
 	ring0_code->code				= 1;
 	ring0_code->code_data_segment 	= 1;
 	ring0_code->DPL					= 0;
 	ring0_code->present				= 1;
 	ring0_code->limit_high			= 0xf;
-	ring0_code->available			= 1;
+	ring0_code->available			= 0;
 	ring0_code->long_mode			= 0;
 	ring0_code->big 				= 1;
 	ring0_code->gran				= 1;
@@ -285,7 +324,7 @@ static void add_ring3_gdt_entries() {
 	ring3_code->DPL					= 3;
 	ring3_code->present				= 1;
 	ring3_code->limit_high			= 0xf;
-	ring3_code->available			= 1;
+	ring3_code->available			= 0;
 	ring3_code->long_mode			= 0;
 	ring3_code->big 				= 1;
 	ring3_code->gran				= 1;
@@ -293,4 +332,40 @@ static void add_ring3_gdt_entries() {
 
 	*ring3_data = *ring3_code;
 	ring3_data->code = 0;
+}
+
+void add_tss_gdt_entry() {
+	_gdt_entry_t *tss_entry = &descriptors[5];
+
+	uint32_t tss_base = (uint32_t) (&kernel_tss);
+	printf("TSS Base: 0x%x\n", tss_base);
+
+	uint32_t tss_limit = sizeof(_tss_entry_t);
+
+	// add a descriptor for the TSS into the GDT
+	tss_entry->limit_low			= tss_limit;
+	tss_entry->base_low				= tss_base;
+	tss_entry->accessed				= 1;		// this flag means something different for system entries. 1 means this is a TSS
+	tss_entry->read_write			= 0;		// this flag represents whether or not the TSS is "busy"
+	tss_entry->conform_expand_down 	= 0;		// always 0 for TSS
+	tss_entry->code					= 1;
+	tss_entry->code_data_segment 	= 0;
+	tss_entry->DPL					= 0;
+	tss_entry->present				= 1;
+	tss_entry->limit_high			= (tss_limit & (0xf << 16)) >> 16;
+	tss_entry->available			= 0;
+	tss_entry->long_mode			= 0;
+	tss_entry->big					= 1;
+	tss_entry->gran					= 0;
+	tss_entry->base_high			= (tss_base & (0xff << 24)) >> 24;
+
+	printf("tss base: 0x%x, tss limit: 0x%x\n", (uint32_t)((tss_entry->base_high << 24) | tss_entry->base_low),(uint32_t)(tss_entry->limit_high | tss_entry->limit_low));
+	memset(&kernel_tss,0,sizeof(_tss_entry_t));
+	kernel_tss.ss0 = 0x10;
+	kernel_tss.esp0 = 0;
+	kernel_tss.iomap_base = sizeof(_tss_entry_t);
+}
+
+void set_kernel_stack(uint32_t esp) {
+	kernel_tss.esp0 = esp;
 }

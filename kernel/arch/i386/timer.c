@@ -53,7 +53,7 @@ static int callback_idx = 0;
 void pit_8254_initialize(void) {
 	// install a device to IRQ0
 	cpu_install_device (0,&timer_irq);
-	pit_8254_start(100);
+	//pit_8254_start(100);
 }
 
 // void pit_8254_start (): Change the timer frequency and start a new timer

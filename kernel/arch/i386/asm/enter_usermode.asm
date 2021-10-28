@@ -1,37 +1,51 @@
+global flush_tss
+flush_tss:
+
+    mov ax,0x28
+    ltr ax
+    ret
+
 ; enter_usermode takes a pointer into some userspace code to transfer execution
 [global enter_usermode]
 extern userspace_method
-extern printf
-string db 'value of eax is 0x%x',13,10,0
-
+extern kernel_tss
+extern set_kernel_stack
 enter_usermode:
 
-    push ebp
-    mov ebp,esp
+    cli
 
-    ; test to see if method call works...
-    mov eax,[esp+4]
+    ; preserve kernel stack in TSS
+    mov eax,esp
+    push eax
+    call set_kernel_stack
+    add esp,4
 
-    push dword [eax]
-    push string
-    call printf
-
-    add esp,8
-
-    pop ebp
-    ret
-
-    mov ax,(4 * 8) | 3     ; ring 3 data segment
+    mov ax,0x23     ; ring 3 data segment
     mov ds,ax
     mov es,ax
     mov fs,ax
     mov gs,ax
 
+    push 0x23
     mov eax,esp
-    push (4*8) | 3
     push eax
-    pushf
-    push (3*8) | 3
-    push edx            ; address of called method
+    pushfd
 
-    iret                ; move to user mode!
+    pop eax
+    or eax,0x200
+    push eax
+
+    push 0x1b
+    mov eax,test_userspace
+    push eax            ; address of called method
+
+    iretd                ; move to user mode!
+
+test_userspace:
+
+    add esp,4
+    int 0x80
+
+forever:
+
+    jmp forever

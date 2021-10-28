@@ -14,7 +14,7 @@ i386_genprotectfault:
 	pushad
 
 	call i386_exception_set_disp
-
+	
 	push str_GeneralProtectionFault
 	push dword [int_ExceptionNumber]
 	push str_SystemException

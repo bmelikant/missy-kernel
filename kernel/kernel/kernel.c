@@ -34,7 +34,9 @@ int timer_test_method(void) {
 }
 
 int userspace_method() {
-	printf("I am in userspace!\n");
+	//printf("Hello, user space world!\n");
+	puts("hello");
+	for(;;);
 	return 0;
 }
 
@@ -61,10 +63,10 @@ void kernel_main(_kernel_params_t *kparams) {
 	int dd = serial_init(COM_PORT_1);
 	printf("com port device descriptor: %d\n", dd);
 
-	int c = 0;
-	while ((c = read_device_char(dd)) != -1) {
-		putchar(c);
-	}
+	//int c = 0;
+	//while ((c = read_device_char(dd)) != -1) {
+	//	putchar(c);
+	//}
 
 	printf("Received EOF from input stream\n");
 
