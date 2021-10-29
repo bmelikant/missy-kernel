@@ -26,7 +26,8 @@
 
 #define DEVICE_INTERRUPT_BASE	0x20
 
-#define INTERRUPT32_TYPE	(INTERRUPT_TYPE_PRESENT|INTERRUPT_TYPE_SYSTEM|INTERRUPT_TYPE_GATE32)
+#define INTERRUPT32_TYPE		(INTERRUPT_TYPE_PRESENT|INTERRUPT_TYPE_SYSTEM|INTERRUPT_TYPE_GATE32)
+#define SYSCALL_INTERRUPT_TYPE	(INTERRUPT_TYPE_PRESENT|INTERRUPT_TYPE_USER|INTERRUPT_TYPE_GATE32)
 #define SYSTEM_CODE_SELECTOR	0x08
 
 #define CPUID_BASIC 	0x0
@@ -141,6 +142,8 @@ extern void __attribute__((cdecl))i386_simdexception();
 extern void __attribute__((cdecl))i386_virtualizeexception();
 extern void __attribute__((cdecl))i386_securityexception();
 
+void __attribute__((naked)) syscall(void);
+
 static inline void stop_interrupts() {
 	asm volatile("cli");
 }
@@ -165,6 +168,7 @@ static void add_ring3_gdt_entries();
 
 static int install_handler(uint32_t index, uint8_t flags, uint16_t selector, uint32_t routine);
 static void install_cpu_exceptions();
+static void install_syscall();
 static bool has_feature(uint32_t feature);
 
 /**
@@ -197,6 +201,7 @@ int cpu_driver_init() {
 	idt_entry.limit = (sizeof(_isr_entry_t)*MAX_INTERRUPTS)-1;
 
 	install_cpu_exceptions();
+	install_syscall();
 	load_idtr();
 
 	// TODO: add APIC detection routine here and use 8259a PIC as fallback
@@ -270,6 +275,11 @@ static void install_cpu_exceptions() {
 	install_handler(19,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_simdexception);
 	install_handler(20,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_virtualizeexception);
 	install_handler(30,INTERRUPT32_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&i386_securityexception);
+}
+
+static void install_syscall() {
+	extern void _syscall();
+	install_handler(0x80,SYSCALL_INTERRUPT_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&_syscall);
 }
 
 /**
@@ -368,4 +378,8 @@ void add_tss_gdt_entry() {
 
 void set_kernel_stack(uint32_t esp) {
 	kernel_tss.esp0 = esp;
+}
+
+__attribute__((naked)) void syscall(void) {
+	__asm__("syscall_hang: jmp syscall_hang");
 }

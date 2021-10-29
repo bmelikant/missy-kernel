@@ -71,5 +71,7 @@ void kernel_main(_kernel_params_t *kparams) {
 	printf("Received EOF from input stream\n");
 
 	// attempt to jump into user mode since the system is "dead" anyway
-	enter_usermode(userspace_method);
+	enter_usermode();
+	__asm__("int $0x80");
+	for (;;);
 }
