@@ -25,8 +25,11 @@ static inline void enter_usermode() {
         "pushf\n\t"
         "pop %eax\n\t"
         "orl $0x200,%eax\n\t"
+        "push %eax\n\t"
         "push $0x1B\n\t"
         "lea userspace,%eax\n\t"
+        "push %eax\n\t"
+        "iretl\n\t"
         "userspace:\n\t"
         "addl $4,%esp"
     );

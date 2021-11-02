@@ -9,6 +9,8 @@
 #include <kernel/serial.h>
 #include <kernel/process.h>
 
+#include <kernel/bochsdbg.h>
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -38,6 +40,13 @@ int userspace_method() {
 	puts("hello");
 	for(;;);
 	return 0;
+}
+
+static inline void flush_pdbr() {
+	__asm__(
+		"mov %eax,%cr3\n\t"
+		"mov %cr3,%eax\n\t"
+	);
 }
 
 void kernel_main(_kernel_params_t *kparams) {
@@ -70,8 +79,30 @@ void kernel_main(_kernel_params_t *kparams) {
 
 	printf("Received EOF from input stream\n");
 
+	//flush_pdbr();
+
 	// attempt to jump into user mode since the system is "dead" anyway
 	enter_usermode();
-	__asm__("int $0x80");
+
+	//BOCHS_MAGIC_BREAKPOINT();
+
+/*
+	char *teststr = "Winky desserts, world!\n";
+	__asm__(
+		"xor %%eax,%%eax\n\t"
+		"lea (%0),%%ebx\n\t"
+		"int $0x80\n\t"
+		:: "b"(teststr)
+	);
+
+	char *teststr2 = "Hallo, world!\n";
+	__asm__(
+		"xor %%eax,%%eax\n\t"
+		"lea (%0),%%ebx\n\t"
+		"int $0x80\n\t"
+		:: "b"(teststr2)
+	);
+*/
+
 	for (;;);
 }

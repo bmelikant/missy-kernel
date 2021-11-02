@@ -35,12 +35,10 @@ i386_system_stop:
 	; print the first part of our halt message
 	push str_SystemMustHalt1
 	call puts
-
 	add esp,0x04
 
 	push str_SystemMustHalt2
 	call puts
-
 	add esp,0x04
 
 	; halt the system!

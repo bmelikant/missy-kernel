@@ -3,6 +3,9 @@
  */
 
 #include <string.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <kernel/bochsdbg.h>
 
 /**
  * initialize a block of memory with the given character

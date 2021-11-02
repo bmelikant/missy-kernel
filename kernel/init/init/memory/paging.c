@@ -4,6 +4,8 @@
 #include <init/kerrno.h>
 #include <init/kterm.h>
 
+#include "../../kernel/include/kernel/bochsdbg.h"
+
 #define PTABLE_FLAG_PRESENT 		0x0001
 #define PTABLE_FLAG_RW				0x0002
 #define PTABLE_FLAG_USER			0x0004
@@ -88,6 +90,7 @@ int create_page_directory() {
 
 	ki_memset(_page_directory,0,PAGE_SIZE);
 	_page_directory[pdir_entry(0xffc00000)] = (uint32_t)(_page_directory) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
+	//BOCHS_MAGIC_BREAKPOINT();
 	return 0;
 }
 
@@ -113,6 +116,7 @@ int map_first_megabyte() {
 	for (uint32_t i = 0; i < 0x100000; i += PAGE_SIZE) {
 		_first_pagetable[ptable_entry(i)] = i | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
 	}
+	//BOCHS_MAGIC_BREAKPOINT();
 	return 0;
 }
 
@@ -140,6 +144,7 @@ int map_kernel() {
 	for (uint32_t i = 0xc0100000; i < (uint32_t)(_kernel_end_virtual); i += PAGE_SIZE) {
 		_kernel_pagetable[ptable_entry(i)] = (i - 0xc0000000) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
 	}
+	//BOCHS_MAGIC_BREAKPOINT();
 	return 0;
 }
 

@@ -5,6 +5,8 @@
 
 #include "balloc.h"
 
+#include <stdio.h>
+
 #include <stddef.h>
 #include <stdint.h>
 #include <errno.h>
@@ -65,6 +67,8 @@ void *balloc_allocate_block() {
 
 	allocate(free_block);
 	void *allocated_ptr = (void *)(free_block*BALLOC_PAGE_SIZE);
+	printf("Address of new block: 0x%x\n", (uint32_t) allocated_ptr);
+	
 	return allocated_ptr;
 }
 

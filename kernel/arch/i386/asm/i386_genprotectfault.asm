@@ -23,6 +23,7 @@ i386_genprotectfault:
 	add esp,12
 
 	; see if a descriptor caused the code
+	mov eax,dword [int_gpfCode]
 	or eax,eax
 	jz .other_error
 
@@ -69,13 +70,14 @@ i386_genprotectfault:
 	push dword [int_gpfCode]
 	push str_GPFErrorCodeStr
 	call printf
+	add esp,8
 
-	i386_stop_system
+	call i386_system_stop
 
 	popad
 	iretd
 
-[section .code]
+[section .data]
 
 str_GeneralProtectionFault 	db "General Protection Fault",0
 str_GPFOther				db "A non-segment error caused this fault",0

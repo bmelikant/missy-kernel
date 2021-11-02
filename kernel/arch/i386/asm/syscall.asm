@@ -2,12 +2,8 @@
 [extern printf]
 _syscall:
 
-    push testline
+    push ebx
     call printf
-    add esp,8
+    add esp,4
 
-hang:
-
-    jmp hang
-
-testline db "Hello, world from userspace!",13,10,0
+    iretd

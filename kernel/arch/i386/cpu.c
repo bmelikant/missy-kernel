@@ -1,6 +1,7 @@
 #include <kernel/cpu.h>
 #include <kernel/pic.h>
 #include <kernel/timer.h>
+#include <kernel/bochsdbg.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -160,7 +161,12 @@ static inline void load_idtr() {
 	asm volatile("lidt (%0);" :: "m"(idt_entry));
 }
 
-extern void flush_tss(void);
+static inline void flush_tss() {
+	__asm__(
+		"movw $0x28,%ax\n\t"
+		"ltr %ax\n\t"
+	);
+}
 
 /** internal function declarations */
 static void add_ring0_gdt_entries();
@@ -191,6 +197,8 @@ int cpu_driver_init() {
 	load_gdtr();
 	flush_tss();		// this has to happen *after* gdt setup. derp.
 	
+	//BOCHS_MAGIC_BREAKPOINT();
+
 	// zero out the interrupt vector table
 	memset(&interrupts[0],0,sizeof(_isr_entry_t)*MAX_INTERRUPTS);
 	for (uint32_t i = 0; i < MAX_INTERRUPTS; i++) {
@@ -227,7 +235,7 @@ void cpu_install_device(uint32_t irq, void *fn_address) {
 	start_interrupts();
 	
 	if (!using_apic) {
-		//pic_8259a_unmask_irq((uint8_t) irq);
+		pic_8259a_unmask_irq((uint8_t) irq);
 	} else {
 		// TODO: add APIC routine here
 	}
@@ -279,7 +287,7 @@ static void install_cpu_exceptions() {
 
 static void install_syscall() {
 	extern void _syscall();
-	install_handler(0x80,SYSCALL_INTERRUPT_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&_syscall);
+	install_handler(0x80,SYSCALL_INTERRUPT_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&syscall);
 }
 
 /**
@@ -304,7 +312,7 @@ static void add_ring0_gdt_entries() {
 	ring0_code->base_low  			= 0;
 	ring0_code->accessed  			= 0;
 	ring0_code->read_write 			= 1;
-	ring0_code->conform_expand_down	= 1;
+	ring0_code->conform_expand_down	= 0;
 	ring0_code->code				= 1;
 	ring0_code->code_data_segment 	= 1;
 	ring0_code->DPL					= 0;
@@ -360,12 +368,12 @@ void add_tss_gdt_entry() {
 	tss_entry->conform_expand_down 	= 0;		// always 0 for TSS
 	tss_entry->code					= 1;
 	tss_entry->code_data_segment 	= 0;
-	tss_entry->DPL					= 0;
+	tss_entry->DPL					= 3;
 	tss_entry->present				= 1;
 	tss_entry->limit_high			= (tss_limit & (0xf << 16)) >> 16;
 	tss_entry->available			= 0;
 	tss_entry->long_mode			= 0;
-	tss_entry->big					= 1;
+	tss_entry->big					= 0;
 	tss_entry->gran					= 0;
 	tss_entry->base_high			= (tss_base & (0xff << 24)) >> 24;
 
@@ -380,6 +388,32 @@ void set_kernel_stack(uint32_t esp) {
 	kernel_tss.esp0 = esp;
 }
 
+#define MAX_SYSCALLS 1
+void *syscalls[] = {
+	puts
+};
+
 __attribute__((naked)) void syscall(void) {
-	__asm__("syscall_hang: jmp syscall_hang");
+	static int idx = 0;
+	__asm__(
+		"movl %%eax,%0"
+		: "=m"(idx)
+	);
+
+	if (idx >= MAX_SYSCALLS)
+	__asm__("iret");
+
+	void *fn = syscalls[idx];
+
+	__asm__(
+		"push %%edi\n\t"
+		"push %%esi\n\t"
+		"push %%edx\n\t"
+		"push %%ecx\n\t"
+		"push %%ebx\n\t"
+		"call %0\n\t"
+		"add $20,%%esp\n\t"
+		"iret\n\t"
+		:: "r"(fn)
+	);
 }
