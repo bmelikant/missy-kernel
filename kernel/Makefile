@@ -13,13 +13,13 @@ EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
+ARCHDIR=arch/$(HOSTARCH)
+INITDIR=init
+
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -I../init/include
+CPPFLAGS:=$(CPPFLAGS) -D__is_missy_kernel -DDEBUG_BUILD -D__build_i386 -Iinclude -Iarch -I$(INITDIR)/include
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
-
-ARCHDIR=arch/$(HOSTARCH)
-INITDIR=../init
 
 include $(ARCHDIR)/make.config
 include $(INITDIR)/make.config

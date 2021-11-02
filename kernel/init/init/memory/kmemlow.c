@@ -25,14 +25,15 @@ static void reserve_region(unsigned int start, unsigned int length);
 static void free_region(unsigned int start, unsigned int length);
 static unsigned int first_free();
 
+
 static inline void allocate(unsigned int block) {
 	unsigned int i = block / BLOCKS_PER_UNIT;
 	unsigned int j = block % BLOCKS_PER_UNIT;
 	_mbitmap_physical[i] |= (1<<j);
 
 	#ifdef DEBUG_KMEMLOW
-	//unsigned int location = (unsigned int)(_mbitmap_physical+i);
-	//ki_printf("allocated in map at 0x%x\n", location);
+	unsigned int location = (unsigned int)(_mbitmap_physical+i);
+	ki_printf("allocated in map at 0x%x\n", location);
 	#endif
 }
 
@@ -148,13 +149,9 @@ void *kmemlow_alloc() {
 
 	allocate(free_block);
 	void *allocated_ptr = (void *)(free_block*PAGE_SIZE);
-	#ifdef DEBUG_KMEMLOW
-	unsigned int allocated_ptr_value = (unsigned int) allocated_ptr;
-	ki_printf("allocated block to address 0x%x\n", allocated_ptr_value);
-	#endif
-
 	return allocated_ptr;
 }
+
 
 void kmemlow_free(void *block) {
 	uint32_t allocated_block = (uint32_t)(block) / PAGE_SIZE;

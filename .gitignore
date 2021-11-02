@@ -7,3 +7,5 @@ missy.iso
 /isodir/
 /sysroot/
 /.vscode
+.clangd/
+compile_commands.json

@@ -14,14 +14,14 @@ SECTIONS {
     kernel_start = .;
 
     .startup : ALIGN(4K) {
-        ../init/init/kinit.o
-        ../init/init/kutils.o
-        ../init/init/multiboot/api.o
-		../init/init/multiboot/mboot.o
-		../init/init/multiboot/mboot2.o
-        ../init/init/memory/kmemlow.o
-		../init/init/memory/paging.o
-        ../init/init/kterm.o
+        init/init/kinit.o
+        init/init/kutils.o
+        init/init/multiboot/api.o
+		init/init/multiboot/mboot.o
+		init/init/multiboot/mboot2.o
+        init/init/memory/kmemlow.o
+		init/init/memory/paging.o
+        init/init/kterm.o
     }
 
     . += 0xC0000000;
