@@ -171,6 +171,7 @@ static inline void flush_tss() {
 /** internal function declarations */
 static void add_ring0_gdt_entries();
 static void add_ring3_gdt_entries();
+static void add_tss_gdt_entry();
 
 static int install_handler(uint32_t index, uint8_t flags, uint16_t selector, uint32_t routine);
 static void install_cpu_exceptions();
@@ -352,7 +353,7 @@ static void add_ring3_gdt_entries() {
 	ring3_data->code = 0;
 }
 
-void add_tss_gdt_entry() {
+static void add_tss_gdt_entry() {
 	_gdt_entry_t *tss_entry = &descriptors[5];
 
 	uint32_t tss_base = (uint32_t) (&kernel_tss);
@@ -377,11 +378,11 @@ void add_tss_gdt_entry() {
 	tss_entry->gran					= 0;
 	tss_entry->base_high			= (tss_base & (0xff << 24)) >> 24;
 
-	printf("tss base: 0x%x, tss limit: 0x%x\n", (uint32_t)((tss_entry->base_high << 24) | tss_entry->base_low),(uint32_t)(tss_entry->limit_high | tss_entry->limit_low));
+	//printf("tss base: 0x%x, tss limit: 0x%x\n", (uint32_t)((tss_entry->base_high << 24) | tss_entry->base_low),(uint32_t)(tss_entry->limit_high | tss_entry->limit_low));
 	memset(&kernel_tss,0,sizeof(_tss_entry_t));
 	kernel_tss.ss0 = 0x10;
 	kernel_tss.esp0 = 0;
-	kernel_tss.iomap_base = sizeof(_tss_entry_t);
+	//kernel_tss.iomap_base = sizeof(_tss_entry_t);
 }
 
 void set_kernel_stack(uint32_t esp) {

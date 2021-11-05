@@ -7,8 +7,9 @@
 int cpu_driver_init();
 void cpu_install_device(uint32_t irq_index,void *fn_address);
 
-//extern void __attribute__((naked)) enter_usermode();
+void enter_usermode();
 
+/**
 static inline void enter_usermode() {
     __asm__(
         "movl %esp,%eax\n\t"
@@ -31,8 +32,9 @@ static inline void enter_usermode() {
         "push %eax\n\t"
         "iretl\n\t"
         "userspace:\n\t"
-        "addl $4,%esp"
+        //"addl $4,%esp"
     );
 }
+*/
 
 #endif

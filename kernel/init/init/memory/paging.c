@@ -164,7 +164,7 @@ int create_new_kernel_stack() {
 
 	ki_memset(_kernel_stack_map,0,PAGE_SIZE);
 	ki_memset(_kernel_stack_first_block,0,PAGE_SIZE);
-	_page_directory[pdir_entry(KERNEL_STACK_MAPPING)] = (uint32_t)(_kernel_stack_map) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
-	_kernel_stack_map[ptable_entry(KERNEL_STACK_MAPPING)] = (uint32_t)(_kernel_stack_first_block) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_USER;
+	_page_directory[pdir_entry(KERNEL_STACK_MAPPING)] = (uint32_t)(_kernel_stack_map) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_RW | PTABLE_FLAG_USER;
+	_kernel_stack_map[ptable_entry(KERNEL_STACK_MAPPING)] = (uint32_t)(_kernel_stack_first_block) | PTABLE_FLAG_PRESENT | PTABLE_FLAG_RW | PTABLE_FLAG_USER;
 	return 0;
 }

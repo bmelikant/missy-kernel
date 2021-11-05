@@ -1,23 +1,14 @@
-global flush_tss
-flush_tss:
-
-    mov ax,0x28
-    ltr ax
-    ret
-
 ; enter_usermode takes a pointer into some userspace code to transfer execution
-;[global enter_usermode]
-extern userspace_method
-extern kernel_tss
+global enter_usermode
 extern set_kernel_stack
-;enter_usermode:
+enter_usermode:
 
     cli
 
     ; preserve kernel stack in TSS
     mov eax,esp
     push eax
-    ;call set_kernel_stack
+    call set_kernel_stack
     add esp,4
 
     mov ax,0x23     ; ring 3 data segment
@@ -31,16 +22,18 @@ extern set_kernel_stack
     push eax
     pushfd
 
+    ; interrupts will be enabled in user mode
     pop eax
     or eax,0x200
     push eax
 
     push 0x1b
-    ;;mov eax,userspace
+    mov eax,userspace
     push eax            ; address of called method
 
     iretd                ; move to user mode!
 
-;userspace:
+userspace:
 
     add esp,4
+    ret

@@ -42,13 +42,6 @@ int userspace_method() {
 	return 0;
 }
 
-static inline void flush_pdbr() {
-	__asm__(
-		"mov %eax,%cr3\n\t"
-		"mov %cr3,%eax\n\t"
-	);
-}
-
 void kernel_main(_kernel_params_t *kparams) {
 	display_init();
 	display_change_color(display_make_color(COLOR_FG_WHITE,COLOR_BG_GREEN));
@@ -64,30 +57,13 @@ void kernel_main(_kernel_params_t *kparams) {
 	memory_init_mmap(kparams->kernel_memory_bitmap, kparams->allocator_total_blocks, kparams->allocator_used_blocks);
 	brk((void *)(kparams->kernel_heap));
 
-	int pid = create_process((__ptr_t)(test_method), (testmethod_end_ptr - testmethod_start_ptr),4096);
-	printf("Successfully created process %d of %i bytes\n", pid, (testmethod_end_ptr - testmethod_start_ptr));
-
-	start_process(pid);
-	
-	int dd = serial_init(COM_PORT_1);
-	printf("com port device descriptor: %d\n", dd);
-
-	//int c = 0;
-	//while ((c = read_device_char(dd)) != -1) {
-	//	putchar(c);
-	//}
-
-	printf("Received EOF from input stream\n");
-
-	//flush_pdbr();
-
 	// attempt to jump into user mode since the system is "dead" anyway
 	enter_usermode();
+	BOCHS_MAGIC_BREAKPOINT();
 
-	//BOCHS_MAGIC_BREAKPOINT();
+	__asm__("push $0x80");
 
-/*
-	char *teststr = "Winky desserts, world!\n";
+	char *teststr = "Winky desserts, world!";
 	__asm__(
 		"xor %%eax,%%eax\n\t"
 		"lea (%0),%%ebx\n\t"
@@ -95,14 +71,13 @@ void kernel_main(_kernel_params_t *kparams) {
 		:: "b"(teststr)
 	);
 
-	char *teststr2 = "Hallo, world!\n";
+	char *teststr2 = "Hallo, world!";
 	__asm__(
 		"xor %%eax,%%eax\n\t"
 		"lea (%0),%%ebx\n\t"
 		"int $0x80\n\t"
 		:: "b"(teststr2)
 	);
-*/
 
 	for (;;);
 }

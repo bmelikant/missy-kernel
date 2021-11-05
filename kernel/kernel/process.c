@@ -14,6 +14,7 @@ typedef struct PROCESS_STRUCT {
     __ptr_t _entry_pt;          // the entry point for the process
     __ptr_t _heap_start;        // the start of the process heap
     __ptr_t _brk;               // program break
+    uint32_t page_directory;    // page directory entry for this process
 
     struct PROCESS_STRUCT *next;    // make this into an intrusive list
 } _process_t;
@@ -26,7 +27,7 @@ int create_process(__ptr_t entry_pt, size_t binary_sz, size_t requested_heap) {
     memset(newproc,0,sizeof(_process_t));
 
     newproc->pstate = QUEUED;
-    newproc->load_address = 0x100000;
+    newproc->load_address = (void *) 0x100000;
     newproc->_entry_pt = entry_pt;
     newproc->_heap_start = NULL;
     newproc->_brk = NULL;
