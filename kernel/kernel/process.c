@@ -7,6 +7,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <stdio.h>
+
 typedef struct PROCESS_STRUCT {
     _process_state_t pstate;    // what is this process doing right now?
     uint32_t flags;             // process flags
@@ -22,6 +24,7 @@ typedef struct PROCESS_STRUCT {
 _process_t *_base_struct = NULL;
 
 int create_process(__ptr_t entry_pt, size_t binary_sz, size_t requested_heap) {
+    puts("Entered create_process");
     // allocate the new process
     _process_t *newproc = (_process_t *) malloc(sizeof(_process_t));
     memset(newproc,0,sizeof(_process_t));
@@ -46,6 +49,7 @@ int create_process(__ptr_t entry_pt, size_t binary_sz, size_t requested_heap) {
     }
 
     _current_ptr->next = newproc;
+    printf("Process ID: %d\n", i);
     return i;
 }
 
@@ -70,6 +74,8 @@ int start_process(int pid) {
         errno = EINVAL;
         return -1;
     }
+    
+    // weeeeeee... gotta map the porcess into memory cuz it all brokeded
 
     // call the current proc entry point... let's just test this
     void (*fn)(void);

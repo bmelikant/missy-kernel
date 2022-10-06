@@ -142,8 +142,7 @@ extern void __attribute__((cdecl))i386_machinecheck();
 extern void __attribute__((cdecl))i386_simdexception();
 extern void __attribute__((cdecl))i386_virtualizeexception();
 extern void __attribute__((cdecl))i386_securityexception();
-
-void __attribute__((naked)) syscall(void);
+extern void __attribute__((naked))syscall(void);
 
 static inline void stop_interrupts() {
 	asm volatile("cli");
@@ -287,7 +286,6 @@ static void install_cpu_exceptions() {
 }
 
 static void install_syscall() {
-	extern void _syscall();
 	install_handler(0x80,SYSCALL_INTERRUPT_TYPE,SYSTEM_CODE_SELECTOR,(uint32_t)&syscall);
 }
 
@@ -389,32 +387,3 @@ void set_kernel_stack(uint32_t esp) {
 	kernel_tss.esp0 = esp;
 }
 
-#define MAX_SYSCALLS 1
-void *syscalls[] = {
-	puts
-};
-
-__attribute__((naked)) void syscall(void) {
-	static int idx = 0;
-	__asm__(
-		"movl %%eax,%0"
-		: "=m"(idx)
-	);
-
-	if (idx >= MAX_SYSCALLS)
-	__asm__("iret");
-
-	void *fn = syscalls[idx];
-
-	__asm__(
-		"push %%edi\n\t"
-		"push %%esi\n\t"
-		"push %%edx\n\t"
-		"push %%ecx\n\t"
-		"push %%ebx\n\t"
-		"call %0\n\t"
-		"add $20,%%esp\n\t"
-		"iret\n\t"
-		:: "r"(fn)
-	);
-}
